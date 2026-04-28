@@ -9,7 +9,7 @@ slowapi==0.1.9
 
 # ML — v3 AI detector (Multi-LLM + DeBERTa ensemble)
 sentence-transformers==2.7.0
-faiss-cpu==1.8.0
+faiss-cpu>=1.8.0
 transformers==4.41.0
 torch==2.3.0
 numpy==1.26.4
