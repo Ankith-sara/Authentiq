@@ -1,0 +1,736 @@
+Artificial intelligence is transforming the world at an unprecedented pace.
+Machine learning enables systems to learn from data.
+Server is running perfectly.
+The `404` was just your browser hitting `/` which has no route — totally normal.
+You can see it yourself:
+- `/health` → `200 OK` ✅
+- `/docs` → `200 OK` ✅
+
+**Your backend is fully working.** Now connect the React frontend.
+Create a file called `.env.local` in your React project root (`authentiq-fixed/`):
+
+```
+VITE_API_URL=http://127.0.0.1:8000
+```
+
+Then replace `src/components/OriginalityChecker.tsx` with the one from the zip I gave you, and start your React app:
+
+```bash
+cd "c:\Users\sarav\Code Tutorial\Project_darkis\authentiq-fixed"
+npm run dev
+```
+
+Open `http://localhost:8080/demo` — paste any text — click Check Originality.
+It will hit your FastAPI backend directly.
+**Quick test first** — open this in your browser to confirm the API works end to end:
+```
+http://127.0.0.1:8000/docs
+```
+
+Click `/check-full` → Try it out → paste this:
+```json
+{
+  "text": "Artificial intelligence is transforming the world at an unprecedented pace.
+Machine learning enables systems to learn from data.",
+  "use_web": false,
+  "store": true
+}
+```
+
+Hit Execute.
+You should get a real originality score back with plagiarism breakdown and AI detection signals.
+Report on My Role in Project Legacy  
+ 
+Day 1: Career Guidance Session  
+Introduction:  On the inaugural day of Project Legacy, I played a crucial role in introducing mentees 
+from Telangana Minorities Residential Jr.
+College Boys to the program.
+With enthusiasm, I welcomed 
+them, fostering a positive and engaging environment for the upcoming sessions.
+Career Exploration:  I facilitated discussions on career paths, focusing on the mentees' aspirations, 
+especially their interest in joining the Indian Navy and Air Force.
+Recognizing their eagerness to crack 
+NDA/NA exams, I shared insights into the requirements and challenges o f pursuing a career in the 
+armed forces and also shared details of other steams that are available after 12th.
+Interactive Activity:  To make the session more interactive, we incorporated an Army drill, capturing 
+the mentees' attention and igniting their passion for a military career.
+This unique experience aimed 
+to inspire and guide them towards realizing their dreams of serving the nati on.
+Day 2: Time Management and Sports Activity  
+Time Management Session: Realising the importance of time management in accomplishing 
+academic and personal objectives, I led a time management session on the second day of Project 
+Legacy.
+I distributed educational DVDs about time management techniques, stressing the value of 
+striking a balance between extracurricular and academic pursuits.
+Sports and Team Building : We had a volleyball match to encourage cooperation and physical 
+exercise.
+Playing sports helped the mentees develop a sense of camaraderie in addition to offering a 
+relaxing break.
+The goal of the volleyball game was to impart the principles of cooperati on and 
+teamwork, which are crucial for success in many facets of life.
+Day 3: Campus Tour and Communication Skills  
+On third day, mentees visited Woxsen University for an insightful campus tour.
+As the facilitator, I 
+seamlessly integrated communication skills discussions during the tour, emphasizing the importance 
+of effective communication in academic and professional settings.
+Engaging discussions and real -time 
+application of communication principles enriched the mentees' experience.
+Campus Tour Experience:  In addition to communication skills, mentees experienced a guided 
+campus tour at Woxsen University.
+The tour provided insights into the university's academic 
+offerings, infrastructure, and the vibrant campus life.
+Mentees had the opportunity to interact wi th 
+faculty members and gain a firsthand understanding of the university's commitment to education 
+and innovation.
+Impact and Feedback:  
+The mentees showed a strong desire to explore different career pathways and improve their time 
+management skills by actively participating in the events.
+Their excitement for the Army exercise and 
+volleyball match was evident, demonstrating their dedicatio n to success and personal development.
+A vibrant blend of enhancing communication abilities and taking in the wonderful learning 
+atmosphere at Woxsen University.
+The campus trip gave mentees a comprehensive knowledge of the 
+intellectual and social facets of university life, supporting  communication skills development.
+Conclusion:  
+My role in Project Legacy's initial days involved creating an inclusive and dynamic atmosphere for 
+mentees to explore career possibilities, develop essential life skills, and cultivate a sense of 
+teamwork.
+Witnessing mentees actively participate, engage in self -discovery, and embrace the tools 
+provided has been a testament to the program's success.
+As we continue this journey, I look forward 
+to further empowering mentees to shape their legacies and make mean ingful contributions to their 
+communities and beyo nd.
+<section className="pt-28 sm:pt-32 pb-20 px-4 sm:px-6 lg:px-12">
+  <div className="w-full max-w-[1400px] mx-auto">
+Let me read the current submissions table structure and History page.Read full submissions table schemaRead full submissions table schemaRead full submissions table schemaScriptDoneThe submissions table doesn't have enough columns to store full history data (AI scores, perplexity, burstiness etc.).
+I need to create a new check_history table.
+Let me build the SQL migration, update the History page, and update the checker.Create migration SQL for check_history tableCreate migration SQL for check_history tableCreate migration SQL for check_history tableScriptDoneNow rebuild History.tsx — Supabase as primary source when signed in, localStorage as fallback when not:Created a file, ran a commandCreated a file, ran a commandComplete History.tsx with Supabase syncHistory.tsxWrite full History.tsx with Supabase cloud syncScriptDoneNow update OriginalityChecker to pass userId and groupId to the new saveToHistory:Ran 2 commands, viewed a file, edited a fileRan 2 commands, viewed a file, edited a fileCheck current saveToHistory usage in OriginalityCheckerScriptSee exact saveToHistory callScriptSee the full processResult functionUpdate saveToHistory call to pass userId and groupId for Supabase syncOriginalityChecker.tsx+30-26DoneNow package all 3 files + the SQL migration:Ran a command, read a fileRan a command, read a filePackage all filesScriptPresented fileDoneThe zip has 3 files.
+Here's exactly what to do:
+
+Step 1 — Run the SQL first (required)
+Open Supabase Dashboard → SQL Editor, paste and run create_check_history.sql.
+This creates the check_history table with all the columns needed (scores, AI signals, perplexity, burstiness etc.) and sets up RLS so users can only read/write their own rows.
+Step 2 — Replace the two source files
+Drop History.tsx → src/pages/ and OriginalityChecker.tsx → src/components/
+
+How it now works
+SituationWhere history is savedNot signed inlocalStorage onlySigned in, no group selectedlocalStorage + Supabase check_historySigned in, group selectedlocalStorage + Supabase check_history + Supabase submissions (for leaderboard)
+On the History page:
+
+Signed in → loads from Supabase, shows "☁ Cloud synced" badge, works on any device
+Not signed in → loads from localStorage, shows "CloudOff Local only" badge + a sign-in nudge
+Deleting an entry removes it from both Supabase and localStorage
+"Clear all" wipes both sources
+Full-Stack Engineer with production experience in building and deploying scalable web and AI-
+driven applications using React, Next.js, and serverless technologies.
+With real startup experience,
+owning end-to-end features from design to debugging, delivering reliable, high-performance apps
+with faster, more efficient deployments.
+AKSANKITH KUMAR SARA
+S U M M A R Y
+W O R K  E X P E R I E N C E
+Built and deployed an e-commerce platform using React.js, Node.js, Express.js, MongoDB, and
+Razorpay, serving 200+ monthly active users and managing end-to-end workflow.
+Designed and implemented RESTful APIs for authentication, cart management, and order
+processing, improving backend reliability by ~30% and reducing runtime failures in production.
+Collaborated directly with business and product stakeholders to translate ambiguous
+requirements into scalable technical solutions under tight iteration cycles.
+Owned CI/CD workflows and resolved deployment failures across staging and production
+environments, reducing release-related issues by 60%.Full Stack Developer Intern | Aharyas Nov, 2024 – Aug, 2025
+• Hyderabad, Telangana, India 
+• a n k i t h k u m a r s a r a @ g m a i l .
+c o m  |  + 9 1  9 3 9 9 3 3 6 6 6 6
+P o r t f o l i o  |  G i t H u b  |  L i n k e d I n
+P R O J E C T S
+A I  W e b s i t e  B u i l d e r - Next.js, Firebase, Convex, Vercel | G i t H u b
+Developed a scalable AI-driven system that converts natural-language prompts into fully
+responsive, production-ready web applications for non-technical users.
+Optimized event-driven rendering workflows and deployment pipelines, reducing build latency
+by 25% and improving overall generation throughput.
+S K I L L S
+L a n g u a g e s  &  F r a m e w o r k s : JavaScript, Python, HTML, CSS, React.js, Angular.js, Next.js,
+Node.js, Express.js, PHP, React Native, Git
+T o o l s  &  T e c h n o l o g i e s : MongoDB, MySQL, Firebase, REST APIs, AWS, Amazon S3, Amazon
+EC2, Docker, Kubernetes, Vercel, CI/CD, GitHub, Postman, Convex, Inngest
+A I  /  D a t a : NumPy, Pandas, Matplotlib, SARIMA, LSTM, Data PreprocessingD e m a n d  F o r e c a s t i n g  f o r  R e t a i l e r s - Python, SARIMA, LSTM | G i t H u b
+Engineered a hybrid time-series forecasting model combining trend-seasonality modeling,
+achieving ~82% prediction accuracy on real retail sales data.
+Applied forecasts to inventory optimization scenarios, simulating stock planning strategies that
+reduced overstocking and stockout risks.
+A I  V i d e o  G e n - Next.js, Remotion, Convex, Firebase, Inngest | G i t H u b
+Built an AI-powered video generation platform that converts text prompts into fully rendered
+1080p videos using event-driven background job orchestration.
+Cut rendering workflows and background processing to reduce manual editing effort by 80%
+through automated orchestration.
+A I  T o u r  P l a n n e r - React Native, Firebase, Google Maps & Gemini AI APIs | G i t H u b
+Created a mobile app that generates 100+ personalized travel itineraries with intelligent routing.
+Improved controlled pathfinding and route-pruning logic to minimize redundant travel loops,
+improving route accuracy and reducing itinerary generation time by 40%.
+E D U C A T I O N
+Bachelor of Computer Science Engineering
+Woxsen University | CGPA: 8.0/10 | 2022 – Expected Mar 2026
+❯ rate this project                                                                                                                                                                                                  
+                                       
+⏺ Authentiq — Project Rating                                                                                                                                                                                         
+                                                                                                                                                                                                                     
+  Overall: 7/10                                                                                                                                                                                                      
+                  
+  ---                                                                                                                                                                                                                
+  Strengths       
+
+  Feature Completeness — 8/10
+  The core product works end-to-end: plagiarism detection, AI detection, PDF upload, group collaboration, history sync.
+That's a lot of functional surface area for what appears to be a solo/small team project.
+Frontend Quality — 8/10
+  Clean React architecture with proper separation (pages, components, contexts, hooks).
+Good use of React Query for server state, Zod + React Hook Form for validation, and shadcn/ui for consistent UI.
+The
+  OriginalityChecker component handles a complex UX well.
+ML Architecture — 7/10
+  Using real embeddings (sentence-transformers) + FAISS for plagiarism is genuinely solid — not just string matching.
+The 5-signal AI detector with weighted scoring is a reasonable approach.
+GPT-2 perplexity is a
+  legitimate technique used in production tools.
+Database Design — 7/10
+  Supabase schema is well-thought-out with RLS on every table, auto-profile triggers, and proper foreign keys.
+The group/membership model is correctly normalized.
+---
+  Weaknesses
+
+  Security — 4/10
+  The .env file (containing Supabase secret keys and access tokens) is committed to the repository.
+This is the most serious issue — those credentials should be rotated immediately.
+Backend Scalability — 5/10
+  The FAISS index is held in-memory and rebuilt on every new submission.
+This works for a demo but breaks under any real load or multi-worker deployment.
+There's no queuing, rate limiting, or request timeout
+  handling.
+No Tests — 4/10
+  Zero test files found anywhere — no unit tests for the detection engines, no integration tests for API endpoints, no frontend component tests.
+The ML scoring logic especially warrants tests since small changes
+  can silently shift results.
+Model Loading — 5/10
+  GPT-2 and sentence-transformer models are loaded at startup on every cold start.
+No caching strategy, no model versioning, and the models are large enough to cause slow startup and high memory usage in
+  production.
+Hardcoded Corpus — 5/10
+  sample_corpus.txt is a static file checked into the repo.
+The plagiarism detector's quality is entirely dependent on what's in this file, and there's no pipeline to curate or expand it meaningfully.
+---
+  Summary Table
+
+  ┌───────────────────────┬───────┐
+  │       Dimension       │ Score │
+  ├───────────────────────┼───────┤
+  │ Feature completeness  │ 8/10  │
+  ├───────────────────────┼───────┤
+  │ Frontend code quality │ 8/10  │
+  ├───────────────────────┼───────┤
+  │ ML/backend approach   │ 7/10  │
+  ├───────────────────────┼───────┤
+  │ Database design       │ 7/10  │
+  ├───────────────────────┼───────┤
+  │ Security              │ 4/10  │
+  ├───────────────────────┼───────┤
+  │ Scalability           │ 5/10  │
+  ├───────────────────────┼───────┤
+  │ Test coverage         │ 4/10  │
+  ├───────────────────────┼───────┤
+  │ Overall               │ 7/10  │
+  └───────────────────────┴───────┘
+
+  ---
+  Verdict
+
+  Strong proof-of-concept / portfolio project with real ML (not fake).
+The frontend is polished and the feature set is ambitious.
+The main gaps are production-readiness concerns — especially the exposed secrets,
+  lack of tests, and in-memory state management.
+With those addressed, this would be a solid 8.5+.
+Two problems: `slowapi` isn't installed, and the test files are in the backend folder causing unnecessary hot-reloads.
+Fix both:Two issues to fix:
+
+1.
+`slowapi` needs installing (`pip install slowapi` wasn't run)
+2.
+The `tests/` folder inside the backend dir triggers hot-reload on every test file change — move tests outside or tell uvicorn to ignore themReplace both start scripts.
+But first, run this **once manually** to install `slowapi`:
+
+```powershell
+pip install slowapi==0.1.9
+```
+
+Then use `start.bat` going forward — it auto-installs all requirements before starting, so this won't happen again.
+**What was wrong:**
+
+1.
+**`ModuleNotFoundError: No module named 'slowapi'`** — `slowapi` was added to `requirements.txt` but never installed.
+The `start.bat` previously didn't run `pip install -r requirements.txt`, so new packages were silently missed.
+Fixed — the script now installs before starting.
+**Constant hot-reloads from test files** — uvicorn's `--reload` watches the entire folder, so every time a test file was saved/created it killed and restarted the server.
+Fixed with `--reload-exclude "tests/*"` — test files are now ignored by the watcher.
+Tutorial\Project_darkis\authentiq-fixed\.venv\Scripts\python.exe ENOENT
+2026-02-25 23:49:13.799 [info] Package list retrieval attempted using pip, action can be done with uv if installed and setting `alwaysUseUv` is enabled.
+2026-02-25 23:49:13.800 [error] Error refreshing packages Error spawning python: spawn c:\Users\sarav\Code Tutorial\Project_darkis\authentiq-fixed\.venv\Scripts\python.exe ENOENT
+2026-02-25 23:49:39.389 [info] Running: c:\Users\sarav\Code Tutorial\Project_darkis\authentiq-fixed\.venv\Scripts\python.exe -m pip list
+2026-02-25 23:49:39.389 [error] Error spawning python: Error: spawn c:\Users\sarav\Code Tutorial\Project_darkis\authentiq-fixed\.venv\Scripts\python.exe ENOENT
+2026-02-25 23:49:39.389 [error] Error running pip list Error spawning python: spawn c:\Users\sarav\Code Tutorial\Project_darkis\authentiq-fixed\.venv\Scripts\python.exe ENOENT
+2026-02-25 23:49:39.389 [info] Package list retrieval attempted using pip, action can be done with uv if installed and setting `alwaysUseUv` is enabled.
+2026-02-25 23:49:39.389 [error] Error refreshing packages Error spawning python: spawn c:\Users\sarav\Code Tutorial\Project_darkis\authentiq-fixed\.venv\Scripts\python.exe ENOENT
+2026-02-25 23:50:41.221 [info] Running: c:\Users\sarav\Code Tutorial\Project_darkis\authentiq-fixed\.venv\Scripts\python.exe -m pip list
+2026-02-25 23:50:41.221 [error] Error spawning python: Error: spawn c:\Users\sarav\Code Tutorial\Project_darkis\authentiq-fixed\.venv\Scripts\python.exe ENOENT
+2026-02-25 23:50:41.221 [error] Error running pip list Error spawning python: spawn c:\Users\sarav\Code Tutorial\Project_darkis\authentiq-fixed\.venv\Scripts\python.exe ENOENT
+2026-02-25 23:50:41.221 [info] Package list retrieval attempted using pip, action can be done with uv if installed and setting `alwaysUseUv` is enabled.
+2026-02-25 23:50:41.221 [error] Error refreshing packages Error spawning python: spawn c:\Users\sarav\Code Tutorial\Project_darkis\authentiq-fixed\.venv\Scripts\python.exe ENOENT
+2026-02-25 23:54:21.590 [info] Running: c:\Users\sarav\Code Tutorial\Project_darkis\authentiq-fixed\.venv\Scripts\python.exe -m pip list
+2026-02-25 23:54:21.590 [error] Error spawning python: Error: spawn c:\Users\sarav\Code Tutorial\Project_darkis\authentiq-fixed\.venv\Scripts\python.exe ENOENT
+2026-02-25 23:54:21.590 [error] Error running pip list Error spawning python: spawn c:\Users\sarav\Code Tutorial\Project_darkis\authentiq-fixed\.venv\Scripts\python.exe ENOENT
+2026-02-25 23:54:21.590 [info] Package list retrieval attempted using pip, action can be done with uv if installed and setting `alwaysUseUv` is enabled.
+2026-02-25 23:54:21.591 [error] Error refreshing packages Error spawning python: spawn c:\Users\sarav\Code Tutorial\Project_darkis\authentiq-fixed\.venv\Scripts\python.exe ENOENT
+Dear Students,
+
+ 
+
+We are extremely thrilled to share that Granules is participating in the Campus Placement Process for the B.Tech 2026 batch.
+Company Name: Granules
+
+Role : Digital Program Manager
+
+ 
+
+Compensation: 8 – 10 LPA (The package may be increased based on relevant experience.)
+
+ 
+
+Qualification: B.Tech-2026.
+Location: Hyderabad
+
+ 
+
+About Company: : Granules India Limited (est.
+1984) is a Hyderabad-based, vertically integrated pharmaceutical company manufacturing Active Pharmaceutical Ingredients (APIs), Pharmaceutical Formulation Intermediates (PFIs), and Finished Dosages (FDs).
+A leader in high-volume, off-patent drugs like Paracetamol and Ibuprofen, it serves over 300 customers in 80+ countries
+
+ 
+
+@Center Of Talent Development Please plan your training accordingly
+Dear Students,
+
+ 
+
+We are extremely thrilled to share that Granules is participating in the Campus Placement Process for the B.Tech 2026 batch.
+Company Name: Granules
+
+Role : Digital Program Manager
+
+ 
+
+Compensation: 8 – 10 LPA (The package may be increased based on relevant experience.)
+
+ 
+
+Qualification: B.Tech-2026.
+Location: Hyderabad
+
+ 
+
+About Company: : Granules India Limited (est.
+1984) is a Hyderabad-based, vertically integrated pharmaceutical company manufacturing Active Pharmaceutical Ingredients (APIs), Pharmaceutical Formulation Intermediates (PFIs), and Finished Dosages (FDs).
+A leader in high-volume, off-patent drugs like Paracetamol and Ibuprofen, it serves over 300 customers in 80+ countries
+
+ 
+
+@Center Of Talent Development Please plan your training accordingly
+Dear Students,
+
+Plot twist… 👀
+The showdown you were waiting for has been pushed but only to make TOMORROW even bigger!
+Student of the Year 2025–26 is now happening TOMORROW at 7:00 PM at the Admin Lawn… and trust us, the extra wait just raised the intensity 💥⚡
+
+The stage is set.
+The arena is ready.
+And tomorrow, the Admin Lawn won’t be ready for the energy you’re about to bring .
+Get set to battle it out in the most thrilling rounds ever:
+
+Round 1: Red Light Green Light – Freeze or lose!
+Round 2: Secret Round - Coordination,Listen,Brainstorm!
+Round 3: Talent Showcase – Lights.
+Round 4: IQ Round – Brains under pressure!
+Round 5: The Final Race – One winner.
+And the rewards?
+Oh, they’re worth it 👇
+make it white and black blue only not gray as it's completely like dark no good visibility
+What QuillBot-Level Systems Use
+
+Commercial AI detectors typically use:
+
+Large supervised transformer classifier
+
+Fine-tuned RoBERTa / DeBERTa
+
+Trained on millions of labeled samples
+
+Adversarial paraphrase data
+
+Watermark detection techniques
+
+Stylometric ML models
+
+Ensemble scoring
+
+Continuous retraining
+
+Your system is not doing that.
+Dear Students,
+
+ 
+
+We are extremely thrilled to share that Granules is participating in the Campus Placement Process for the B.Tech 2026 batch.
+Company Name: Granules
+
+Role : Digital Program Manager
+
+ 
+
+Compensation: 8 – 10 LPA (The package may be increased based on relevant experience.)
+
+ 
+
+Qualification: B.Tech-2026.
+Location: Hyderabad
+
+ 
+
+About Company: : Granules India Limited (est.
+1984) is a Hyderabad-based, vertically integrated pharmaceutical company manufacturing Active Pharmaceutical Ingredients (APIs), Pharmaceutical Formulation Intermediates (PFIs), and Finished Dosages (FDs).
+A leader in high-volume, off-patent drugs like Paracetamol and Ibuprofen, it serves over 300 customers in 80+ countries
+
+ 
+
+@Center Of Talent Development Please plan your training accordingly
+Let me read all the current files carefully, then convert everything to Tailwind with proper mobile responsiveness.Ran 10 commandsRan 10 commandsRead tailwind config to understand available utilitiesScriptRewrite CSS - black background, blue accentScriptRewrite Navigation with TailwindScriptRewrite Footer with TailwindScriptRewrite Index with full TailwindScriptRewrite About with TailwindScriptRewrite Auth with TailwindScriptRewrite Beta with TailwindScriptRewrite Groups with TailwindScriptRewrite Privacy and NotFound with TailwindScriptDoneNow update the History page to match the same Tailwind-based black/blue theme:Ran 2 commands, read a fileRan 2 commands, read a fileRewrite History page with full TailwindScriptPackage all Tailwind filesScriptPresented fileDoneAll 11 files fully converted to Tailwind — replace your entire src/ with these.
+Here's what was fixed:
+Tailwind throughout — zero inline styles remaining.
+Every colour, spacing, border, hover state, and animation is a Tailwind class.
+Mobile-first layout fixes — the margin problem is gone:
+
+All sections use max-w-6xl mx-auto px-4 sm:px-6 — no wasted horizontal space on mobile
+Grids switch from grid-cols-2 on desktop to grid-cols-1 on mobile via responsive prefixes
+Hero font scales with text-4xl sm:text-6xl lg:text-7xl instead of fixed clamp()
+Buttons stack with flex-col sm:flex-row on small screens
+
+Black + Blue design preserved exactly as your uploaded files:
+
+bg-black everywhere, border-blue-600 borders, text-blue-500 accents
+Blue-tinted cards: bg-blue-600/5 border-blue-600/50
+White CTA buttons (bg-white text-black) for primary actions
+Score colours: blue for good, yellow for fair, red for poor
+
+History page also fully converted — stats grid, entry cards with expand/collapse, mini bars, search, filters, all in Tailwind with no inline styles.
+Backend Framework
+FastAPI (main.py)
+The web server that exposes your API endpoints.
+Chosen because it's async-native (important for non-blocking ML inference), auto-generates OpenAPI docs, and has clean Pydantic validation built in.
+Pydantic
+Validates incoming JSON payloads — enforces that text is between 10 and 50,000 characters before it even reaches your ML code.
+SlowAPI
+Rate limiting middleware.
+Caps requests at 30/minute per IP globally, 20/minute on heavy endpoints, 10/minute on PDF upload.
+Prevents abuse and protects model compute.
+Uvicorn
+The ASGI server that actually runs FastAPI.
+Handles async I/O at the HTTP level.
+AI Detection (ai_detector.py)
+GPT-2 (transformers, torch)
+Used purely as a perplexity calculator — not a classifier.
+It measures how "surprising" each token is.
+Lower perplexity = smoother, more predictable text = AI-like.
+GPT-2 is used here because it's small, fast, and well understood — not because it's the best detector.
+DeBERTa-v3-base (transformers)
+The primary classifier.
+A 2021-era Microsoft model with disentangled attention that understands context far better than GPT-2.
+It's loaded as a binary sequence classifier (human vs AI).
+If fine-tuned weights exist on disk, they're loaded automatically.
+Heuristic signals (pure Python — statistics, re, collections)
+Six hand-crafted features — burstiness, entropy, AI phrase density, structural uniformity, unique word ratio, sentence length.
+No ML needed, fast to compute, and serve as the fallback when DeBERTa isn't trained yet.
+scikit-learn (LogisticRegression, roc_curve)
+Used only for Platt scaling calibration — fits a logistic regression to map raw scores to reliable probabilities, and reports ROC AUC before/after.
+NumPy
+Array operations for embeddings and score averaging in the paraphrase robustness layer.
+Plagiarism Detection (plagiarism_engine.py)
+SentenceTransformers (all-MiniLM-L6-v2)
+Converts sentences into 384-dimensional semantic vectors.
+all-MiniLM-L6-v2 is used specifically because it's tiny (80MB), fast, and very good at semantic similarity — the sweet spot for a local plagiarism checker.
+FAISS (faiss-cpu)
+Facebook's vector similarity library.
+Builds an index of all corpus sentence embeddings and does nearest-neighbour search in milliseconds, even with thousands of stored sentences.
+IndexFlatIP = exact inner-product (cosine) search.
+sample_corpus.txt + submissions.txt
+The "database." Every submission gets split into sentences and appended to submissions.txt.
+On the next check, those sentences are in the index — so the system learns from everything it has ever seen.
+SerpAPI (requests, optional)
+If a SERPAPI_KEY env var is set, the top 3 most-similar sentences are also checked against live Google results.
+Disabled by default.
+PDF Support
+pypdf
+Extracts raw text from uploaded PDFs page by page.
+The extracted text is then passed through the exact same pipeline as plain text.
+Infrastructure
+CORS middleware
+Allows the frontend (running on port 5173 or 8080) to call the backend API from the browser.
+Configured via ALLOWED_ORIGINS env var.
+lifespan context
+Both ML models (plagiarism_warmup, ai_warmup) are pre-loaded and "warmed up" before the server accepts its first real request.
+Without this, the first user would wait 5–10 seconds for cold model loading.
+asyncio.wait_for timeout wrapper
+Any request that takes longer than 30 seconds (configurable) returns a 504 instead of hanging forever.
+sentencepiece (requirements.txt)
+A tokenization library that DeBERTa-v3 requires under the hood.
+Not called directly — the transformers library pulls it in when loading the DeBERTa tokenizer.
+Summary in one line each
+LibraryRoleFastAPIAPI serverPydanticInput validationSlowAPIRate limitingPyTorchTensor ops + model inferenceTransformersGPT-2 + DeBERTa model loadingSentenceTransformersSemantic sentence embeddingsFAISSFast vector similarity searchscikit-learnCalibration + ROC curvesNumPyArray mathpypdfPDF text extractionrequestsOptional web search
+Commercial AI detectors typically use:
+
+Large supervised transformer classifier
+
+Fine-tuned RoBERTa / DeBERTa
+
+Trained on millions of labeled samples
+
+Adversarial paraphrase data
+
+Watermark detection techniques
+
+Stylometric ML models
+
+Ensemble scoring
+
+Continuous retraining
+
+Your system is not doing that.
+pip install fastapi uvicorn	9394ce3b-34bb-497e-b4a3-500b9d135205
+This error means **port `4000` is already being used by another process**, so your Node server can’t start.	d1cf862c-6f0c-434a-8b90-6dd13b13e7a2
+```text
+Error: listen EADDRINUSE: address already in use :::4000
+```
+
+Node.js throws this when another app (or another instance of your server) is already listening on the same port.	d1cf862c-6f0c-434a-8b90-6dd13b13e7a2
+Node networking docs explain this behavior.	d1cf862c-6f0c-434a-8b90-6dd13b13e7a2
+[https://nodejs.org/api/net.html#serverlisten](https://nodejs.org/api/net.html#serverlisten)
+
+---
+
+# ✅ Fix 1 — Kill the process using port 4000 (Windows)
+
+### Step 1: Find the process
+
+```powershell
+netstat -ano | findstr :4000
+```
+
+You’ll see something like:
+
+```text
+TCP    0.0.0.0:4000    0.0.0.0:0    LISTENING    12345
+```
+
+The last number (`12345`) is the **PID**.	d1cf862c-6f0c-434a-8b90-6dd13b13e7a2
+---
+
+### Step 2: Kill the process
+
+```powershell
+taskkill /PID 12345 /F
+```
+
+Then run your server again:
+
+```bash
+npm run server
+```
+
+Microsoft docs:
+[https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/taskkill](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/taskkill)
+
+---
+
+# ✅ Fix 2 — Change the port (quick solution)
+
+In your `server.js`:
+
+```js
+const PORT = 5000;
+```
+
+or
+
+```js
+const PORT = process.env.PORT || 5000;
+```
+
+Then run:
+
+```bash
+node server.js
+```
+
+---
+
+# ✅ Fix 3 — If Nodemon restarted twice (very common)
+
+Sometimes **nodemon or another Node process is already running**.	d1cf862c-6f0c-434a-8b90-6dd13b13e7a2
+Just stop everything:
+
+```bash
+Ctrl + C
+```
+
+Then restart:
+
+```bash
+npm run server
+```
+
+---
+
+# ⚡ Fastest solution (one command)
+
+```powershell
+npx kill-port 4000
+```
+
+Then start server.	d1cf862c-6f0c-434a-8b90-6dd13b13e7a2
+NPM package reference:
+[https://www.npmjs.com/package/kill-port](https://www.npmjs.com/package/kill-port)
+
+---
+
+# 💡 Pro tip for your project (Aharyas)
+
+Use this pattern in `server.js` to **avoid crashes**:
+
+```js
+const PORT = process.env.PORT || 4000;
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
+```
+
+---
+
+✅ If you want, I can also show you a **really useful dev trick**:
+**How to auto-kill the port before starting the server** so this error never happens again.	d1cf862c-6f0c-434a-8b90-6dd13b13e7a2
+This error means **port `4000` is already being used by another process**, so your Node server can’t start.	c4474e6f-d2e0-4afa-ac17-392bd80460a2
+```text
+Error: listen EADDRINUSE: address already in use :::4000
+```
+
+Node.js throws this when another app (or another instance of your server) is already listening on the same port.	c4474e6f-d2e0-4afa-ac17-392bd80460a2
+Node networking docs explain this behavior.	c4474e6f-d2e0-4afa-ac17-392bd80460a2
+[https://nodejs.org/api/net.html#serverlisten](https://nodejs.org/api/net.html#serverlisten)
+
+---
+
+# ✅ Fix 1 — Kill the process using port 4000 (Windows)
+
+### Step 1: Find the process
+
+```powershell
+netstat -ano | findstr :4000
+```
+
+You’ll see something like:
+
+```text
+TCP    0.0.0.0:4000    0.0.0.0:0    LISTENING    12345
+```
+
+The last number (`12345`) is the **PID**.	c4474e6f-d2e0-4afa-ac17-392bd80460a2
+---
+
+### Step 2: Kill the process
+
+```powershell
+taskkill /PID 12345 /F
+```
+
+Then run your server again:
+
+```bash
+npm run server
+```
+
+Microsoft docs:
+[https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/taskkill](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/taskkill)
+
+---
+
+# ✅ Fix 2 — Change the port (quick solution)
+
+In your `server.js`:
+
+```js
+const PORT = 5000;
+```
+
+or
+
+```js
+const PORT = process.env.PORT || 5000;
+```
+
+Then run:
+
+```bash
+node server.js
+```
+
+---
+
+# ✅ Fix 3 — If Nodemon restarted twice (very common)
+
+Sometimes **nodemon or another Node process is already running**.	c4474e6f-d2e0-4afa-ac17-392bd80460a2
+Just stop everything:
+
+```bash
+Ctrl + C
+```
+
+Then restart:
+
+```bash
+npm run server
+```
+
+---
+
+# ⚡ Fastest solution (one command)
+
+```powershell
+npx kill-port 4000
+```
+
+Then start server.	c4474e6f-d2e0-4afa-ac17-392bd80460a2
+NPM package reference:
+[https://www.npmjs.com/package/kill-port](https://www.npmjs.com/package/kill-port)
+
+---
+
+# 💡 Pro tip for your project (Aharyas)
+
+Use this pattern in `server.js` to **avoid crashes**:
+
+```js
+const PORT = process.env.PORT || 4000;
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
+```
+
+---
+
+✅ If you want, I can also show you a **really useful dev trick**:
+**How to auto-kill the port before starting the server** so this error never happens again.	c4474e6f-d2e0-4afa-ac17-392bd80460a2

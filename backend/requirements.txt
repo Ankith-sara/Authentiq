@@ -1,0 +1,33 @@
+# Core API
+fastapi==0.111.0
+uvicorn[standard]==0.29.0
+pydantic==2.7.1
+python-multipart==0.0.9
+
+# Rate limiting
+slowapi==0.1.9
+
+# ML — v3 AI detector (Multi-LLM + DeBERTa ensemble)
+sentence-transformers==2.7.0
+faiss-cpu==1.8.0
+transformers==4.41.0
+torch==2.3.0
+numpy==1.26.4
+scikit-learn==1.4.2
+sentencepiece==0.2.0
+# GPT-2 family models (gpt2, distilgpt2, gpt2-medium) are downloaded
+# automatically by transformers on first run — no extra pip package needed.
+
+# PDF support
+pypdf==4.2.0
+
+# Web search
+requests==2.32.2
+
+# PostgreSQL + pgvector (optional — only needed if POSTGRES_DSN is set)
+psycopg2-binary==2.9.9
+
+# Testing
+pytest==8.2.0
+pytest-asyncio==0.23.7
+httpx==0.27.0

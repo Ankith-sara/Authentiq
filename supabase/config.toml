@@ -1,0 +1,7 @@
+project_id = "cmhtgxcrxcdekwwtvzjj"
+
+[functions.check-originality]
+verify_jwt = false
+
+[functions.beta-signup]
+verify_jwt = false
