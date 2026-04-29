@@ -50,8 +50,8 @@ chmod +x start.sh
 ```bash
 # Create and activate virtualenv
 python -m venv venv
-venv\Scripts\activate          # Windows
-source venv/bin/activate       # Mac/Linux
+venv\Scripts\activate        
+source venv/bin/activate       
 
 # Install deps (torch download = ~500MB first time)
 pip install -r requirements.txt
@@ -109,11 +109,3 @@ VITE_API_URL=http://127.0.0.1:8000
 ```
 
 The `OriginalityChecker` component reads this and calls your FastAPI directly.
-
-## Upgrade Path to Production
-
-1. **Replace FAISS** with PostgreSQL + pgvector for persistence across restarts
-2. **Replace SerpAPI** with Google Custom Search for more quota
-3. **Add Redis** for caching embedding results (saves API cost)
-4. **Deploy backend** on Render (free tier works), Railway, or AWS EC2
-5. **Improve AI detector** by fine-tuning a RoBERTa classifier on labeled data

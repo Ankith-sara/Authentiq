@@ -16,16 +16,16 @@ from slowapi.errors import RateLimitExceeded
 from plagiarism_engine import check_plagiarism, store_submission, warmup as plagiarism_warmup
 from ai_detector import detect_ai, warmup as ai_warmup
 
-# ─── Rate Limiter ─────────────────────────────────────────────────────────────
+# Rate Limiter
 limiter = Limiter(key_func=get_remote_address, default_limits=["30/minute"])
 
-# ─── Allowed origins ──────────────────────────────────────────────────────────
+# Allowed origins
 ALLOWED_ORIGINS = os.getenv(
     "ALLOWED_ORIGINS",
     "http://localhost:8080,http://localhost:5173,http://127.0.0.1:8080"
 ).split(",")
 
-# ─── Optional API key auth ────────────────────────────────────────────────────
+# Optional API key auth 
 _API_KEY = os.getenv("AUTHENTIQ_API_KEY")   # if set, all endpoints require this key
 
 def _check_api_key(x_api_key: Optional[str]):
@@ -33,7 +33,7 @@ def _check_api_key(x_api_key: Optional[str]):
     if _API_KEY and x_api_key != _API_KEY:
         raise HTTPException(status_code=401, detail="Invalid or missing API key.")
 
-# ─── Lifespan ─────────────────────────────────────────────────────────────────
+# Lifespan 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print("[startup] Warming up models...")
@@ -43,7 +43,7 @@ async def lifespan(app: FastAPI):
     yield
     print("[shutdown] Shutting down.")
 
-# ─── App ─────────────────────────────────────────────────────────────────────
+# App 
 app = FastAPI(
     title="Authentiq API",
     description="Real AI originality detection — plagiarism + AI content scoring",
@@ -62,7 +62,7 @@ app.add_middleware(
     allow_headers=["Content-Type", "X-Api-Key"],
 )
 
-# ─── Timeout helper ───────────────────────────────────────────────────────────
+# Timeout helper
 REQUEST_TIMEOUT = int(os.getenv("REQUEST_TIMEOUT_SECONDS", "30"))
 
 async def run_with_timeout(coro, timeout: int = REQUEST_TIMEOUT):
@@ -74,7 +74,7 @@ async def run_with_timeout(coro, timeout: int = REQUEST_TIMEOUT):
             detail=f"Analysis timed out after {timeout}s. Try shorter text."
         )
 
-# ─── Schemas ─────────────────────────────────────────────────────────────────
+# Schemas
 class TextPayload(BaseModel):
     text: str = Field(..., min_length=10, max_length=50_000)
     use_web: bool = Field(False)
@@ -98,8 +98,7 @@ class SubmitPayload(BaseModel):
     text: str = Field(..., min_length=10, max_length=50_000)
     source_id: Optional[str] = Field(None, max_length=128)
 
-# ─── Routes ──────────────────────────────────────────────────────────────────
-
+# Routes
 @app.get("/health")
 def health():
     return {
