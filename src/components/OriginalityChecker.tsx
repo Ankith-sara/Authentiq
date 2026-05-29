@@ -4,13 +4,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
 import {
   Loader2, CheckCircle, AlertTriangle, Shield, Upload,
   Brain, FileText, Globe, AlertCircle, ChevronDown, ChevronUp,
-  History, Users
+  History, Users, Sparkles, Trash2, Edit3, Eye
 } from "lucide-react";
 import { saveToHistory } from "@/pages/History";
 import { useAuth } from "@/contexts/AuthContext";
@@ -18,8 +17,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 const API_BASE = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
 
-// ── Types ──────────────────────────────────────────────────────────────────
-
+// Types 
 interface SentenceResult {
   sentence: string;
   similarity: number;
@@ -29,6 +27,7 @@ interface SentenceResult {
 }
 
 interface PlagiarismResult {
+  similarity_stats: Record<string, number> | null;
   plagiarism_score: number;
   originality_score: number;
   matches: SentenceResult[];
@@ -70,14 +69,8 @@ interface Group {
   name: string;
 }
 
-// ── Helpers ────────────────────────────────────────────────────────────────
-
+// Helpers 
 const scoreColor = (s: number) => s >= 75 ? "text-blue-400" : s >= 50 ? "text-blue-300" : "text-blue-200";
-const scoreBg   = (s: number) => s >= 75 ? "bg-blue-500/10 border-blue-500" : s >= 50 ? "bg-blue-500/10 border-blue-400" : "bg-blue-500/10 border-blue-300";
-const scoreIcon = (s: number) => s >= 75
-  ? <CheckCircle className="h-7 w-7 text-blue-400" />
-  : s >= 50 ? <AlertTriangle className="h-7 w-7 text-blue-300" />
-  : <AlertCircle className="h-7 w-7 text-blue-200" />;
 
 const SIGNAL_LABELS: Record<string, string> = {
   perplexity: "GPT-2 Perplexity",
@@ -87,8 +80,51 @@ const SIGNAL_LABELS: Record<string, string> = {
   entropy: "Token Entropy",
 };
 
-// ── Component ──────────────────────────────────────────────────────────────
+// SVG Radial Progress Indicator
+const RadialOriginality = ({ score }: { score: number }) => {
+  const radius = 60;
+  const stroke = 6;
+  const normalizedRadius = radius - stroke * 2;
+  const circumference = normalizedRadius * 2 * Math.PI;
+  const strokeDashoffset = circumference - (score / 100) * circumference;
 
+  const color = score >= 75 ? "#3b82f6" : score >= 50 ? "#60a5fa" : "#93c5fd";
+
+  return (
+    <div className="flex flex-col items-center justify-center p-2 select-none">
+      <div className="relative flex items-center justify-center">
+        <svg height={radius * 2} width={radius * 2} className="transform -rotate-90">
+          <circle
+            stroke="rgba(59, 130, 246, 0.05)"
+            fill="transparent"
+            strokeWidth={stroke}
+            r={normalizedRadius}
+            cx={radius}
+            cy={radius}
+          />
+          <circle
+            stroke={color}
+            fill="transparent"
+            strokeWidth={stroke}
+            strokeDasharray={circumference + ' ' + circumference}
+            style={{ strokeDashoffset }}
+            strokeLinecap="round"
+            r={normalizedRadius}
+            cx={radius}
+            cy={radius}
+            className="transition-all duration-700 ease-out"
+          />
+        </svg>
+        <div className="absolute text-center flex flex-col items-center justify-center">
+          <span className="text-3xl font-extrabold font-mono text-white leading-none">{score}%</span>
+          <span className="text-[8px] text-slate-400 font-bold uppercase tracking-wider mt-1">Original</span>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Component 
 const OriginalityChecker = () => {
   const { toast } = useToast();
   const { user } = useAuth();
@@ -100,6 +136,11 @@ const OriginalityChecker = () => {
   const [result, setResult] = useState<FullResult | null>(null);
   const [showAllSentences, setShowAllSentences] = useState(false);
   const [mode, setMode] = useState<"text" | "pdf">("text");
+
+  // Quillbot-style states
+  const [activeView, setActiveView] = useState<"edit" | "inspect">("edit");
+  const [selectedSentenceIndex, setSelectedSentenceIndex] = useState<number | null>(null);
+  const [activeResultTab, setActiveResultTab] = useState<"plagiarism" | "ai" | "sentences">("plagiarism");
 
   // Group state
   const [myGroups, setMyGroups] = useState<Group[]>([]);
@@ -129,7 +170,7 @@ const OriginalityChecker = () => {
     fetchGroups();
   }, [user]);
 
-  // ── Save result to Supabase submissions table ──
+  // Save result to Supabase submissions table 
   const saveToSupabase = async (data: FullResult, inputText: string) => {
     if (!user) return;
     setSavingToGroup(true);
@@ -143,7 +184,6 @@ const OriginalityChecker = () => {
       });
       if (error) {
         console.error("Supabase save error:", error);
-        // Non-blocking: analysis succeeded, just warn the user
         toast({
           title: "Result saved locally",
           description: "Cloud sync failed — your result is saved in History on this device.",
@@ -155,7 +195,7 @@ const OriginalityChecker = () => {
     }
   };
 
-  // ── Process result: save history + save to Supabase ──
+  // Process result
   const processResult = async (data: FullResult, inputText: string) => {
     setResult(data);
     await saveToHistory(
@@ -181,10 +221,9 @@ const OriginalityChecker = () => {
         },
         total_processing_ms: data.total_processing_ms,
       },
-      user?.id,        
+      user?.id,
       selectedGroupId || undefined
     );
-    // Also save to submissions table for group leaderboard
     await saveToSupabase(data, inputText);
 
     const groupName = myGroups.find(g => g.id === selectedGroupId)?.name;
@@ -192,9 +231,20 @@ const OriginalityChecker = () => {
       title: "Analysis complete!",
       description: `${data.combined_originality_score}% original${groupName ? ` · saved to "${groupName}"` : " · saved to history"}`,
     });
+
+    // Automatically transition to split inspector view
+    setActiveView("inspect");
+    const firstFlaggedIndex = data.plagiarism.sentence_results.findIndex(s => s.flagged);
+    if (firstFlaggedIndex !== -1) {
+      setSelectedSentenceIndex(firstFlaggedIndex);
+      setActiveResultTab("sentences");
+    } else {
+      setSelectedSentenceIndex(null);
+      setActiveResultTab("plagiarism");
+    }
   };
 
-  // ── Check text ──
+  // Check text
   const handleCheck = async () => {
     if (!text || text.trim().length < 10) {
       toast({ title: "Too short", description: "Enter at least 10 characters.", variant: "destructive" });
@@ -214,14 +264,15 @@ const OriginalityChecker = () => {
       }
       const data: FullResult = await res.json();
       await processResult(data, text);
-    } catch (e: any) {
-      toast({ title: "Error", description: e.message || "Failed to reach backend.", variant: "destructive" });
+    } catch (e) {
+      const message = e instanceof Error ? e.message : "Failed to reach backend.";
+      toast({ title: "Error", description: message, variant: "destructive" });
     } finally {
       setChecking(false);
     }
   };
 
-  // ── Check PDF ──
+  // Check PDF
   const handlePdfUpload = async (file: File) => {
     setChecking(true);
     setResult(null);
@@ -236,9 +287,11 @@ const OriginalityChecker = () => {
         throw new Error(err.detail || `Server error ${res.status}`);
       }
       const data: FullResult = await res.json();
+      setText(`[PDF Content Extracted: ${file.name}]`);
       await processResult(data, `PDF: ${file.name}`);
-    } catch (e: any) {
-      toast({ title: "Error", description: e.message || "Failed to analyze PDF.", variant: "destructive" });
+    } catch (e) {
+      const message = e instanceof Error ? e.message : "Failed to analyze PDF.";
+      toast({ title: "Error", description: message, variant: "destructive" });
     } finally {
       setChecking(false);
     }
@@ -248,323 +301,473 @@ const OriginalityChecker = () => {
   const ai = result?.ai_detection;
 
   return (
-    <div className="w-full max-w-6xl mx-auto space-y-4 sm:space-y-6 px-2 sm:px-0">
-
-      {/* ── Input Card ── */}
-      <div className="p-4 sm:p-6">
-        <div className="flex items-center gap-2 mb-1.5">
-          <Shield className="h-5 w-5 text-blue-500" />
-          <h2 className="text-lg sm:text-2xl font-bold text-white">Check Originality</h2>
-        </div>
-        <p className="text-white/80 mb-4 text-xs sm:text-sm">
-          Real semantic similarity + GPT-2 AI detection.
-        </p>
-
-        <div className="flex gap-2 mb-4">
-          <Button size="sm" variant={mode === "text" ? "default" : "outline"} onClick={() => setMode("text")} className="flex-1 sm:flex-none">
-            <FileText className="h-3.5 w-3.5 mr-1.5" /> Text
-          </Button>
-          <Button size="sm" variant={mode === "pdf" ? "default" : "outline"} onClick={() => setMode("pdf")} className="flex-1 sm:flex-none">
-            <Upload className="h-3.5 w-3.5 mr-1.5" /> PDF
-          </Button>
-        </div>
-
-        {mode === "text" ? (
-          <Textarea
-            placeholder="Paste your text here..."
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            rows={8}
-            className="mb-4 font-mono text-sm bg-black border-blue-500 text-white placeholder:text-white/40"
-          />
-        ) : (
-          <div
-            className="mb-4 border-2 border-dashed border-blue-500 rounded-xl p-8 sm:p-12 text-center cursor-pointer hover:bg-blue-500/10 transition"
-            onClick={() => fileInputRef.current?.click()}
-          >
-            <Upload className="h-6 w-6 sm:h-8 sm:w-8 mx-auto mb-2 text-blue-400" />
-            <p className="text-white/70 text-sm">Tap to upload a PDF</p>
-            <input ref={fileInputRef} type="file" accept=".pdf" className="hidden"
-              onChange={(e) => { const f = e.target.files?.[0]; if (f) handlePdfUpload(f); }} />
-          </div>
-        )}
-
-        {user && myGroups.length > 0 && (
-          <div className="mb-4 p-3 rounded-xl bg-blue-500/10 border border-blue-500">
-            <div className="flex items-center gap-2 mb-2">
-              <Users className="h-3.5 w-3.5 text-blue-500" />
-              <span className="text-xs font-semibold text-white">Save to Group</span>
-              <span className="text-xs text-white/60">(optional — for leaderboard)</span>
+    <div className="w-full max-w-7xl mx-auto px-2 sm:px-4 lg:px-6">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+        
+        {/* ── LEFT PANEL: QuillBot-Style Editor Workspace (7 Columns) ── */}
+        <div className="lg:col-span-7 flex flex-col bg-[#080d1a] border border-blue-500/15 rounded-2xl overflow-hidden min-h-[500px] shadow-2xl relative">
+          
+          {/* Header toolbar */}
+          <div className="px-4 py-3 border-b border-blue-500/10 flex items-center justify-between bg-blue-950/20">
+            <div className="flex gap-1.5 items-center">
+              <Button 
+                size="sm" 
+                variant={activeView === "edit" ? "default" : "ghost"}
+                onClick={() => setActiveView("edit")}
+                className="text-xs font-semibold px-3 h-8 text-white"
+              >
+                <Edit3 className="h-3.5 w-3.5 mr-1 text-blue-400" /> Write / Edit
+              </Button>
+              {result && (
+                <Button 
+                  size="sm" 
+                  variant={activeView === "inspect" ? "default" : "ghost"}
+                  onClick={() => setActiveView("inspect")}
+                  className="text-xs font-semibold px-3 h-8 text-white"
+                >
+                  <Eye className="h-3.5 w-3.5 mr-1 text-blue-400" /> Interactive Inspector
+                </Button>
+              )}
             </div>
-            <select
-              value={selectedGroupId}
-              onChange={e => setSelectedGroupId(e.target.value)}
-              className="w-full text-sm rounded-lg bg-black border border-blue-500 text-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">None (history only)</option>
-              {myGroups.map(g => (
-                <option key={g.id} value={g.id}>{g.name}</option>
-              ))}
-            </select>
-          </div>
-        )}
 
-        {!user && (
-          <div className="mb-4 p-3 rounded-xl bg-blue-500/5 border border-blue-500 flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2 text-xs text-white/70">
-              <Users className="h-3.5 w-3.5" />
-              Sign in to save results to a group leaderboard
-            </div>
-            <Link to="/auth">
-              <Button size="sm" variant="outline" className="text-xs h-7 border-blue-500 text-white">Sign In</Button>
-            </Link>
-          </div>
-        )}
-
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-3 flex-wrap">
-            {mode === "text" && (
-              <span className="text-xs text-white/60">
-                {text.length} chars · {text.split(/\s+/).filter(Boolean).length} words
-              </span>
+            {activeView === "edit" && (
+              <div className="flex gap-2">
+                <button 
+                  onClick={() => setMode("text")} 
+                  className={`text-xs px-2.5 py-1 rounded-md transition ${mode === "text" ? "bg-blue-500/15 text-blue-400 border border-blue-500/20" : "text-slate-400 hover:text-white"}`}
+                >
+                  Text
+                </button>
+                <button 
+                  onClick={() => setMode("pdf")} 
+                  className={`text-xs px-2.5 py-1 rounded-md transition ${mode === "pdf" ? "bg-blue-500/15 text-blue-400 border border-blue-500/20" : "text-slate-400 hover:text-white"}`}
+                >
+                  PDF Upload
+                </button>
+              </div>
             )}
-            <button
-              onClick={() => setUseWeb(!useWeb)}
-              className={`flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-lg border transition ${
-                useWeb ? "border-blue-500 bg-blue-500/20 text-blue-400" : "border-blue-500 text-white/70"
-              }`}
-            >
-              <Globe className="h-3 w-3" /> Web {useWeb ? "ON" : "OFF"}
-            </button>
           </div>
 
-          {mode === "text" && (
-            <Button onClick={handleCheck} disabled={checking || text.trim().length < 10} size="lg" className="w-full sm:w-auto bg-blue-500 hover:bg-blue-600 text-white">
-              {checking
-                ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Analyzing...</>
-                : <><Shield className="mr-2 h-4 w-4" /> Check Originality</>}
-            </Button>
-          )}
-        </div>
-      </div>
-
-      {checking && (
-        <Card className="p-6 sm:p-8 text-center border-2 border-blue-500 bg-black">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-3 text-blue-500" />
-          <p className="font-medium text-sm sm:text-base text-white">Running analysis...</p>
-          <p className="text-xs sm:text-sm text-white/60 mt-1">
-            Embeddings · Corpus match · GPT-2 perplexity
-            {savingToGroup && " · Saving to group..."}
-          </p>
-        </Card>
-      )}
-
-      {/* ── Results ── */}
-      {result && !checking && (
-        <>
-          <Card className={`p-4 sm:p-6 border-2 ${scoreBg(result.combined_originality_score)} bg-black`}>
-            <div className="flex items-center justify-between gap-3">
-              <div className="flex items-center gap-3 sm:gap-4">
-                {scoreIcon(result.combined_originality_score)}
-                <div>
-                  <div className="flex items-baseline gap-1.5">
-                    <span className={`text-3xl sm:text-4xl font-bold ${scoreColor(result.combined_originality_score)}`}>
-                      {result.combined_originality_score}%
-                    </span>
-                    <span className="text-sm text-white/70 font-medium">original</span>
+          {/* Core Content Area */}
+          <div className="flex-1 p-4 flex flex-col relative min-h-[350px]">
+            {activeView === "edit" ? (
+              mode === "text" ? (
+                <div className="flex-1 flex flex-col">
+                  <Textarea
+                    placeholder="Paste or write your essay, article, or document here to scan for semantic plagiarism and AI footprints..."
+                    value={text}
+                    onChange={(e) => setText(e.target.value)}
+                    className="flex-1 resize-none border-0 bg-transparent text-slate-100 placeholder:text-slate-500 focus-visible:ring-0 focus-visible:ring-offset-0 px-2 py-1 text-sm font-sans leading-relaxed min-h-[300px] overflow-y-auto"
+                  />
+                  {text.length > 0 && (
+                    <button 
+                      onClick={() => setText("")}
+                      className="absolute top-4 right-4 p-2 text-slate-500 hover:text-red-400 hover:bg-red-500/5 rounded-lg transition"
+                      title="Clear text"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  )}
+                </div>
+              ) : (
+                <div 
+                  className="flex-1 border-2 border-dashed border-blue-500/20 rounded-xl flex flex-col items-center justify-center p-8 text-center cursor-pointer hover:bg-blue-500/5 hover:border-blue-500/40 transition-all select-none min-h-[300px]"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <div className="w-14 h-14 rounded-full bg-blue-500/10 flex items-center justify-center mb-4">
+                    <Upload className="h-6 w-6 text-blue-400" />
                   </div>
-                  <p className="text-xs text-white/60">
-                    Saved to history
-                    {selectedGroupId && myGroups.find(g => g.id === selectedGroupId) &&
-                      ` · Saved to "${myGroups.find(g => g.id === selectedGroupId)?.name}" ✓`}
+                  <h3 className="text-white font-semibold text-sm mb-1">Upload Document PDF</h3>
+                  <p className="text-slate-400 text-xs max-w-xs mx-auto mb-4 leading-normal">
+                    Files are parsed securely on Authentiq's servers and cross-checked against our database.
                   </p>
+                  <Button size="sm" className="btn-secondary h-8 px-4 text-xs font-semibold">Select File</Button>
+                  <input ref={fileInputRef} type="file" accept=".pdf" className="hidden"
+                    onChange={(e) => { const f = e.target.files?.[0]; if (f) handlePdfUpload(f); }} />
+                </div>
+              )
+            ) : (
+              /* Interactive Inspector Screen */
+              <div className="flex-1 text-sm leading-relaxed text-slate-300 font-sans px-2 py-1 overflow-y-auto max-h-[420px] select-text">
+                {result && result.plagiarism.sentence_results.length > 0 ? (
+                  result.plagiarism.sentence_results.map((s, idx) => {
+                    if (s.flagged) {
+                      const isSelected = selectedSentenceIndex === idx;
+                      return (
+                        <span 
+                          key={idx}
+                          onClick={() => {
+                            setSelectedSentenceIndex(idx);
+                            setActiveResultTab("sentences");
+                          }}
+                          className={`cursor-pointer px-0.5 rounded transition-all leading-loose inline-block ${
+                            isSelected 
+                              ? "bg-blue-600/30 border-b-2 border-blue-400 text-white font-medium shadow-sm" 
+                              : "bg-blue-500/15 border-b border-blue-500/30 text-slate-100 hover:bg-blue-500/25"
+                          }`}
+                          title={`${s.similarity}% Match (Click to inspect source)`}
+                        >
+                          {s.sentence}
+                        </span>
+                      );
+                    }
+                    return <span key={idx} className="text-slate-300 inline-block">{s.sentence} </span>;
+                  })
+                ) : (
+                  <p className="text-slate-400 italic">No sentence markers loaded.</p>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Footer toolbar panel */}
+          <div className="px-4 py-3 border-t border-blue-500/10 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-blue-950/10">
+            <div className="flex items-center gap-3 flex-wrap">
+              {mode === "text" && activeView === "edit" && (
+                <span className="text-[11px] text-slate-400 font-mono">
+                  {text.trim().length === 0 ? "0 words" : `${text.split(/\s+/).filter(Boolean).length} words`} · {text.length} chars
+                </span>
+              )}
+              
+              {user && myGroups.length > 0 && activeView === "edit" && (
+                <div className="flex items-center gap-1.5 bg-blue-950/40 px-2 py-1 rounded-lg border border-blue-500/15">
+                  <span className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Group:</span>
+                  <select
+                    value={selectedGroupId}
+                    onChange={e => setSelectedGroupId(e.target.value)}
+                    className="text-xs bg-transparent border-none text-white focus:outline-none cursor-pointer"
+                  >
+                    <option value="">Private Scan</option>
+                    {myGroups.map(g => (
+                      <option key={g.id} value={g.id} className="bg-black">{g.name}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              {activeView === "edit" && (
+                <button
+                  onClick={() => setUseWeb(!useWeb)}
+                  className={`flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-lg border transition ${
+                    useWeb ? "border-blue-500 bg-blue-500/10 text-blue-400 font-semibold" : "border-blue-500/25 text-slate-400"
+                  }`}
+                >
+                  <Globe className="h-3.5 w-3.5" /> Web Scan: {useWeb ? "ON" : "OFF"}
+                </button>
+              )}
+            </div>
+
+            {activeView === "edit" && mode === "text" && (
+              <Button 
+                onClick={handleCheck} 
+                disabled={checking || text.trim().length < 10} 
+                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-md px-5 h-9 rounded-xl text-xs transition-all flex-shrink-0"
+              >
+                {checking ? (
+                  <><Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> Scanning...</>
+                ) : (
+                  <><Shield className="mr-1.5 h-3.5 w-3.5" /> Scan Originality</>
+                )}
+              </Button>
+            )}
+          </div>
+        </div>
+
+        {/* ── RIGHT PANEL: QuillBot-Style Analysis Sidebar (5 Columns) ── */}
+        <div className="lg:col-span-5 flex flex-col bg-[#080d1a] border border-blue-500/15 rounded-2xl overflow-hidden min-h-[500px] shadow-2xl relative">
+          
+          {/* Checking Loader State */}
+          {checking && (
+            <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-black/60 backdrop-blur-sm z-30">
+              <Loader2 className="h-10 w-10 animate-spin text-blue-500 mb-4" />
+              <h3 className="text-white font-bold text-base mb-1">Performing Originality Scan</h3>
+              <p className="text-xs text-slate-400 max-w-xs leading-normal mb-4">
+                Computing dense sentence transformer embeddings, cross-verifying active indices, and scanning GPT-2 perplexity distribution.
+              </p>
+              <div className="w-full max-w-[240px] space-y-2 mt-4 text-left border border-blue-500/10 p-3 rounded-xl bg-blue-950/20">
+                <div className="flex items-center gap-2 text-xs text-slate-300">
+                  <CheckCircle className="h-3.5 w-3.5 text-blue-400" /> Canonical decomposition...
+                </div>
+                <div className="flex items-center gap-2 text-xs text-slate-300">
+                  <Loader2 className="h-3 w-3 animate-spin text-blue-400" /> Vector corpus comparison...
+                </div>
+                <div className="flex items-center gap-2 text-xs text-slate-500">
+                  <div className="w-1.5 h-1.5 rounded-full bg-slate-600 ml-1" /> Perplexity verification...
                 </div>
               </div>
-              <div className="text-right text-xs text-white/60 shrink-0 space-y-0.5">
-                <p>{result.total_processing_ms}ms</p>
-                <p>{p?.corpus_size} refs</p>
-                {p?.web_checked && <p className="text-blue-400">web ✓</p>}
+            </div>
+          )}
+
+          {/* Empty Placeholder State */}
+          {!result && !checking && (
+            <div className="flex-1 flex flex-col items-center justify-center p-8 text-center text-slate-400">
+              <Sparkles className="h-10 w-10 text-blue-500/40 mb-4" />
+              <h3 className="text-white font-semibold text-sm mb-1.5">No Scan Active</h3>
+              <p className="text-xs text-slate-400 max-w-xs mx-auto leading-normal mb-6">
+                Paste your text in the editor or upload a document file to begin vector analysis.
+              </p>
+              
+              <div className="w-full max-w-xs border border-blue-500/10 rounded-2xl p-4 bg-blue-950/5 text-left space-y-4">
+                <div className="flex gap-3">
+                  <span className="w-5 h-5 rounded-full bg-blue-500/10 text-blue-400 text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">1</span>
+                  <div>
+                    <h4 className="text-white text-xs font-semibold">Semantic Matching</h4>
+                    <p className="text-[10px] text-slate-400 mt-0.5">Detects paraphrasing and matching vector alignments.</p>
+                  </div>
+                </div>
+                <div className="flex gap-3">
+                  <span className="w-5 h-5 rounded-full bg-blue-500/10 text-blue-400 text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">2</span>
+                  <div>
+                    <h4 className="text-white text-xs font-semibold">Multi-LLM Probability</h4>
+                    <p className="text-[10px] text-slate-400 mt-0.5">Ensemble analysis of sentence perplexity and burstiness signals.</p>
+                  </div>
+                </div>
               </div>
             </div>
-            <Progress value={result.combined_originality_score} className="mt-3 h-2 sm:h-3" />
-            <p className="text-[10px] sm:text-xs text-white/60 mt-1.5">
-              60% plagiarism originality · 40% human probability
-            </p>
-          </Card>
+          )}
 
-          <Card className="p-4 sm:p-6 border-2 border-blue-500 bg-black">
-            <Tabs defaultValue="plagiarism">
-              <TabsList className="grid w-full grid-cols-3 h-9 sm:h-10 bg-blue-500/10 border border-blue-500">
-                <TabsTrigger value="plagiarism" className="text-xs sm:text-sm text-white data-[state=active]:bg-blue-500 data-[state=active]:text-white">
-                  <FileText className="h-3.5 w-3.5 mr-1 hidden sm:inline" /> Plagiarism
-                </TabsTrigger>
-                <TabsTrigger value="ai" className="text-xs sm:text-sm text-white data-[state=active]:bg-blue-500 data-[state=active]:text-white">
-                  <Brain className="h-3.5 w-3.5 mr-1 hidden sm:inline" /> AI Score
-                </TabsTrigger>
-                <TabsTrigger value="sentences" className="text-xs sm:text-sm text-white data-[state=active]:bg-blue-500 data-[state=active]:text-white">
+          {/* Loaded Result Panel */}
+          {result && !checking && (
+            <div className="flex-1 flex flex-col">
+              
+              {/* Radial Score dashboard header */}
+              <div className="p-4 border-b border-blue-500/10 bg-blue-950/20 flex items-center justify-around gap-2 flex-wrap">
+                <RadialOriginality score={result.combined_originality_score} />
+                
+                <div className="flex flex-col gap-2 shrink-0">
+                  <div className="text-xs text-slate-400 font-mono">
+                    <p>Processing: <span className="text-white font-bold">{result.total_processing_ms}ms</span></p>
+                    <p>Corpus Size: <span className="text-white font-bold">{p?.corpus_size} refs</span></p>
+                    {p?.web_checked && <p className="text-blue-400 font-bold">Web check active ✓</p>}
+                  </div>
+                  <div className="text-[10px] text-slate-400 font-sans leading-relaxed border-t border-blue-500/10 pt-1">
+                    <p>{p?.plagiarism_score}% plagiarism footprint</p>
+                    <p>{ai?.ai_probability}% AI detection chance</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Tabs list */}
+              <div className="px-4 py-2 border-b border-blue-500/10 flex bg-[#080d1a]">
+                <button
+                  onClick={() => setActiveResultTab("plagiarism")}
+                  className={`flex-1 text-center py-2 text-xs font-semibold transition ${
+                    activeResultTab === "plagiarism" ? "text-blue-400 border-b-2 border-blue-500" : "text-slate-400 hover:text-white"
+                  }`}
+                >
+                  Plagiarism
+                </button>
+                <button
+                  onClick={() => setActiveResultTab("ai")}
+                  className={`flex-1 text-center py-2 text-xs font-semibold transition ${
+                    activeResultTab === "ai" ? "text-blue-400 border-b-2 border-blue-500" : "text-slate-400 hover:text-white"
+                  }`}
+                >
+                  AI Score
+                </button>
+                <button
+                  onClick={() => setActiveResultTab("sentences")}
+                  className={`flex-1 text-center py-2 text-xs font-semibold transition flex items-center justify-center gap-1.5 ${
+                    activeResultTab === "sentences" ? "text-blue-400 border-b-2 border-blue-500" : "text-slate-400 hover:text-white"
+                  }`}
+                >
                   Sentences
                   {p && p.flagged_sentences > 0 && (
-                    <Badge variant="destructive" className="ml-1 text-[9px] px-1 py-0 bg-blue-600 border-blue-400">{p.flagged_sentences}</Badge>
+                    <span className="bg-blue-600 text-white text-[8px] font-bold px-1.5 py-0.5 rounded-full">
+                      {p.flagged_sentences}
+                    </span>
                   )}
-                </TabsTrigger>
-              </TabsList>
+                </button>
+              </div>
 
-              {/* Plagiarism tab */}
-              <TabsContent value="plagiarism" className="mt-4 space-y-4">
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
-                  {[
-                    { label: "Originality", value: `${p?.originality_score}%`, color: scoreColor(p?.originality_score ?? 0) },
-                    { label: "Plagiarism",  value: `${p?.plagiarism_score}%`, color: "text-white" },
-                    { label: "Flagged",     value: `${p?.flagged_sentences}/${p?.total_sentences}`, color: "text-white" },
-                    { label: "Time",        value: `${p?.processing_ms}ms`, color: "text-white" },
-                  ].map(({ label, value, color }) => (
-                    <div key={label} className="bg-blue-500/10 border border-blue-500 rounded-xl p-3 text-center">
-                      <p className={`text-lg sm:text-2xl font-bold ${color ?? ""}`}>{value}</p>
-                      <p className="text-[10px] sm:text-xs text-white/60 mt-0.5">{label}</p>
-                    </div>
-                  ))}
-                </div>
-                <div className="space-y-1.5">
-                  <div className="flex justify-between text-xs sm:text-sm text-white">
-                    <span className="font-medium">Plagiarism Level</span>
-                    <span>{p?.plagiarism_score}%</span>
-                  </div>
-                  <Progress value={p?.plagiarism_score ?? 0} className="h-2" />
-                </div>
-                {p?.similarity_stats && (
-                  <div className="grid grid-cols-3 gap-2 text-center text-xs">
-                    {(["max", "mean", "median"] as const).map(k => (
-                      <div key={k} className="bg-blue-500/5 border border-blue-500 rounded-xl p-2">
-                        <p className="text-white font-medium">{(p.similarity_stats as any)[k]}%</p>
-                        <p className="text-white/50 capitalize">{k} sim.</p>
+              {/* Tab Contents wrapper */}
+              <div className="flex-1 p-4 overflow-y-auto max-h-[300px] min-h-[250px]">
+                
+                {/* 1. Plagiarism Match List */}
+                {activeResultTab === "plagiarism" && (
+                  <div className="space-y-4">
+                    <div className="space-y-1.5">
+                      <div className="flex justify-between text-xs text-white">
+                        <span className="font-semibold text-slate-300">Overall Plagiarism footprint:</span>
+                        <span className="font-bold">{p?.plagiarism_score}%</span>
                       </div>
-                    ))}
-                  </div>
-                )}
-                {p?.matches.length === 0 && (
-                  <div className="text-center py-4 text-blue-400">
-                    <CheckCircle className="h-8 w-8 mx-auto mb-2" />
-                    <p className="text-sm font-medium">No corpus matches found.</p>
-                  </div>
-                )}
-              </TabsContent>
+                      <Progress value={p?.plagiarism_score ?? 0} className="h-2 bg-blue-950" />
+                    </div>
 
-              {/* AI tab */}
-              <TabsContent value="ai" className="mt-4 space-y-4">
-                <div className="grid grid-cols-2 gap-2 sm:gap-3">
-                  {[
-                    { label: "Human Probability", value: `${ai?.human_probability}%`, color: scoreColor(ai?.human_probability ?? 0) },
-                    { label: "AI Probability",    value: `${ai?.ai_probability}%`, color: "text-white" },
-                  ].map(({ label, value, color }) => (
-                    <div key={label} className="bg-blue-500/10 border border-blue-500 rounded-xl p-3 text-center">
-                      <p className={`text-xl sm:text-2xl font-bold ${color ?? ""}`}>{value}</p>
-                      <p className="text-[10px] sm:text-xs text-white/60 mt-0.5">{label}</p>
-                    </div>
-                  ))}
-                </div>
-                <div className="bg-blue-500/10 border border-blue-500 rounded-xl p-3 sm:p-4 flex items-center justify-between">
-                  <div>
-                    <p className="text-xs text-white/60">Verdict</p>
-                    <p className="font-semibold text-sm sm:text-base text-white">{ai?.verdict}</p>
-                  </div>
-                  <Badge variant="outline" className="text-xs border-blue-500 text-white">{ai?.confidence} confidence</Badge>
-                </div>
-                <div className="space-y-2.5">
-                  <p className="text-xs sm:text-sm font-medium text-white">Signal Breakdown:</p>
-                  {ai && Object.entries(ai.signal_breakdown).map(([key, val]) => (
-                    <div key={key} className="space-y-1">
-                      <div className="flex justify-between text-[10px] sm:text-xs text-white">
-                        <span className="text-white/70">{SIGNAL_LABELS[key] ?? key}</span>
-                        <span>Score: {val.score} · {Math.round(val.weight * 100)}% weight</span>
+                    {p?.similarity_stats && (
+                      <div className="grid grid-cols-3 gap-2 text-center text-[10px]">
+                        {(["max", "mean", "median"] as const).map(k => (
+                          <div key={k} className="bg-blue-500/5 border border-blue-500/10 rounded-xl p-2">
+                            <p className="text-white font-bold font-mono text-xs">{(p.similarity_stats as Record<string, number>)[k]}%</p>
+                            <p className="text-slate-400 capitalize">{k} sim.</p>
+                          </div>
+                        ))}
                       </div>
-                      <Progress value={val.score} className="h-1.5" />
-                    </div>
-                  ))}
-                </div>
-                <div className="bg-blue-500/5 border border-blue-500 rounded-xl p-3 font-mono text-[10px] sm:text-xs space-y-1 text-white">
-                  <p className="font-semibold font-sans text-xs sm:text-sm mb-1.5">Raw Signals</p>
-                  {ai && <>
-                    <p>Perplexity: {ai.raw_signals.perplexity}</p>
-                    <p>Burstiness: {ai.raw_signals.burstiness}</p>
-                    <p>Entropy: {ai.raw_signals.entropy}</p>
-                    <p>Avg Word Length: {ai.raw_signals.stylometry.avg_word_length}</p>
-                    <p>Unique Word Ratio: {ai.raw_signals.stylometry.unique_word_ratio}</p>
-                    <p>Avg Sentence Length: {ai.raw_signals.stylometry.avg_sentence_length} words</p>
-                  </>}
-                </div>
-                <div className="space-y-1.5">
-                  <p className="text-xs sm:text-sm font-medium text-white">Why this score:</p>
-                  {ai?.reasoning.map((r, i) => (
-                    <div key={i} className="flex gap-2 text-[10px] sm:text-xs text-white/70">
-                      <span className="mt-0.5 shrink-0 text-blue-500">•</span>
-                      <span>{r}</span>
-                    </div>
-                  ))}
-                </div>
-              </TabsContent>
-
-              {/* Sentences tab */}
-              <TabsContent value="sentences" className="mt-4 space-y-2 sm:space-y-3">
-                {p && p.sentence_results.length === 0 && (
-                  <p className="text-center py-6 text-white/60 text-sm">No sentences found.</p>
-                )}
-                {p && (showAllSentences ? p.sentence_results : p.sentence_results.filter(s => s.flagged)).map((s, i) => (
-                  <div key={i} className={`p-3 rounded-xl border text-sm ${
-                    s.flagged ? "bg-blue-500/10 border-blue-400" : "bg-blue-500/5 border-blue-500"
-                  }`}>
-                    <div className="flex justify-between items-start gap-2 mb-1">
-                      <p className="text-xs sm:text-sm leading-relaxed flex-1 text-white">{s.sentence}</p>
-                      <div className="flex gap-1 shrink-0">
-                        <Badge variant={s.flagged ? "destructive" : "outline"} className="text-[10px] px-1.5 bg-blue-600 border-blue-400 text-white">{s.similarity}%</Badge>
-                        {s.source === "web" && <Badge variant="secondary" className="text-[10px] px-1.5 bg-blue-500 text-white">web</Badge>}
-                      </div>
-                    </div>
-                    {s.flagged && s.matched_text && (
-                      <p className="text-[10px] sm:text-xs text-white/60 mt-1.5 border-t border-blue-500 pt-1.5">
-                        ↳ "{s.matched_text.substring(0, 100)}{s.matched_text.length > 100 ? "…" : ""}"
-                      </p>
                     )}
-                    <Progress value={s.similarity} className="h-1 mt-2" />
-                  </div>
-                ))}
-                {p && p.sentence_results.length > 0 && (
-                  <button
-                    onClick={() => setShowAllSentences(!showAllSentences)}
-                    className="flex items-center gap-1 text-xs text-white/70 hover:text-white transition mx-auto pt-1"
-                  >
-                    {showAllSentences
-                      ? <><ChevronUp className="h-3 w-3" /> Show flagged only</>
-                      : <><ChevronDown className="h-3 w-3" /> Show all {p.sentence_results.length} sentences</>}
-                  </button>
-                )}
-              </TabsContent>
-            </Tabs>
-          </Card>
 
-          {/* Links */}
-          <div className="flex items-center justify-center gap-3">
-            <Link to="/history">
-              <Button variant="outline" size="sm" className="text-xs sm:text-sm border-blue-500 text-white hover:bg-blue-500/10">
-                <History className="mr-1.5 h-3.5 w-3.5" /> History
-              </Button>
-            </Link>
-            {selectedGroupId && (
-              <Link to={`/compare/${selectedGroupId}`}>
-                <Button variant="outline" size="sm" className="text-xs sm:text-sm border-blue-500 text-white hover:bg-blue-500/10">
-                  <Users className="mr-1.5 h-3.5 w-3.5" /> View Group Leaderboard
-                </Button>
-              </Link>
-            )}
-            {!selectedGroupId && user && (
-              <Link to="/groups">
-                <Button variant="outline" size="sm" className="text-xs sm:text-sm border-blue-500 text-white hover:bg-blue-500/10">
-                  <Users className="mr-1.5 h-3.5 w-3.5" /> Join a Group
-                </Button>
-              </Link>
-            )}
-          </div>
-        </>
-      )}
+                    {p?.matches && p.matches.length > 0 ? (
+                      <div className="space-y-2 mt-4">
+                        <p className="text-[11px] text-slate-400 font-bold uppercase tracking-wider">Top similarity matches</p>
+                        {p.matches.slice(0, 4).map((m, idx) => (
+                          <div key={idx} className="p-3 bg-blue-500/5 border border-blue-500/10 rounded-xl text-xs space-y-1.5">
+                            <div className="flex justify-between items-center">
+                              <span className="font-bold text-white uppercase tracking-tight text-[9px] bg-blue-500/10 px-2 py-0.5 rounded">Match {idx + 1}</span>
+                              <span className="text-blue-400 font-bold font-mono">{m.similarity}% Match</span>
+                            </div>
+                            <p className="text-slate-300 leading-normal">"{m.sentence}"</p>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-6 text-blue-400 flex flex-col items-center">
+                        <CheckCircle className="h-8 w-8 mb-2 opacity-80" />
+                        <p className="text-xs font-semibold text-white">No major plagiarism matches found.</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* 2. AI Score Breakdown */}
+                {activeResultTab === "ai" && (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-2 text-center">
+                      <div className="bg-blue-500/5 border border-blue-500/10 rounded-xl p-2.5">
+                        <p className="text-base font-bold font-mono text-blue-300">{ai?.human_probability}%</p>
+                        <p className="text-[9px] text-slate-400 font-semibold uppercase tracking-wider">Human probability</p>
+                      </div>
+                      <div className="bg-blue-500/5 border border-blue-500/10 rounded-xl p-2.5">
+                        <p className="text-base font-bold font-mono text-white">{ai?.ai_probability}%</p>
+                        <p className="text-[9px] text-slate-400 font-semibold uppercase tracking-wider">AI probability</p>
+                      </div>
+                    </div>
+
+                    <div className="bg-blue-500/5 border border-blue-500/10 rounded-xl p-3 flex items-center justify-between">
+                      <div>
+                        <p className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Verdict</p>
+                        <p className="font-bold text-sm text-white">{ai?.verdict}</p>
+                      </div>
+                      <Badge variant="outline" className="text-[10px] border-blue-500/30 text-slate-300">{ai?.confidence} confidence</Badge>
+                    </div>
+
+                    <div className="space-y-2">
+                      <p className="text-xs font-semibold text-slate-300">Feature Signals:</p>
+                      {ai && Object.entries(ai.signal_breakdown).map(([key, val]) => (
+                        <div key={key} className="space-y-1">
+                          <div className="flex justify-between text-[10px] text-slate-400">
+                            <span>{SIGNAL_LABELS[key] ?? key}</span>
+                            <span>{val.score} score · {Math.round(val.weight * 100)}% weight</span>
+                          </div>
+                          <Progress value={val.score} className="h-1 bg-blue-950" />
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="space-y-1.5 pt-1.5 border-t border-blue-500/10">
+                      <p className="text-xs font-semibold text-slate-300">Model Reasoning:</p>
+                      {ai?.reasoning.map((r, i) => (
+                        <div key={i} className="flex gap-2 text-[10px] text-slate-400 leading-relaxed">
+                          <span className="text-blue-500">•</span>
+                          <span>{r}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* 3. Detailed Sentences List */}
+                {activeResultTab === "sentences" && (
+                  <div className="space-y-2">
+                    {p && p.sentence_results.length === 0 && (
+                      <p className="text-center py-6 text-slate-400 text-xs italic">No sentences mapped.</p>
+                    )}
+
+                    {/* Active focused sentence details helper */}
+                    {selectedSentenceIndex !== null && p && p.sentence_results[selectedSentenceIndex] && (
+                      <div className="p-3 bg-blue-500/10 border border-blue-500/30 rounded-xl text-xs space-y-2 mb-3 shadow-md">
+                        <div className="flex justify-between items-center border-b border-blue-500/10 pb-1.5">
+                          <span className="font-bold text-blue-300 uppercase tracking-wider text-[8px]">Focused Sentence</span>
+                          <Badge variant="destructive" className="text-[9px] px-1.5 bg-blue-600 border-blue-400">{p.sentence_results[selectedSentenceIndex].similarity}% match</Badge>
+                        </div>
+                        <p className="text-white font-medium">"{p.sentence_results[selectedSentenceIndex].sentence}"</p>
+                        {p.sentence_results[selectedSentenceIndex].matched_text && (
+                          <div className="text-slate-400 bg-black/40 p-2 rounded-lg mt-1 border border-blue-500/5 leading-relaxed">
+                            <p className="text-[9px] font-bold text-blue-400/80 uppercase tracking-tight mb-1">Source Match Footprint:</p>
+                            <p className="italic">↳ "{p.sentence_results[selectedSentenceIndex].matched_text}"</p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider pt-2">Full Sentence breakdown list</p>
+                    {p && (showAllSentences ? p.sentence_results : p.sentence_results.filter(s => s.flagged)).map((s, i) => {
+                      const isSelected = selectedSentenceIndex === i;
+                      return (
+                        <div 
+                          key={i} 
+                          onClick={() => setSelectedSentenceIndex(i)}
+                          className={`p-2.5 rounded-xl border text-xs cursor-pointer transition-all ${
+                            isSelected 
+                              ? "bg-blue-600/10 border-blue-500" 
+                              : s.flagged ? "bg-blue-500/5 border-blue-500/15 hover:bg-blue-500/10" : "bg-transparent border-transparent hover:bg-slate-900"
+                          }`}
+                        >
+                          <div className="flex justify-between items-start gap-2 mb-1">
+                            <p className={`leading-normal flex-1 ${s.flagged ? "text-slate-200" : "text-slate-500"}`}>{s.sentence}</p>
+                            <Badge 
+                              variant={s.flagged ? "destructive" : "outline"} 
+                              className={`text-[9px] px-1.5 shrink-0 select-none ${s.flagged ? "bg-blue-600 border-blue-400 text-white" : "border-blue-500/20 text-slate-400"}`}
+                            >
+                              {s.similarity}%
+                            </Badge>
+                          </div>
+                          <Progress value={s.similarity} className="h-1 bg-blue-950 mt-1.5" />
+                        </div>
+                      );
+                    })}
+
+                    {p && p.sentence_results.length > 0 && (
+                      <button
+                        onClick={() => setShowAllSentences(!showAllSentences)}
+                        className="flex items-center gap-1 text-[10px] text-slate-400 hover:text-white transition mx-auto pt-3 pb-1"
+                      >
+                        {showAllSentences
+                          ? <><ChevronUp className="h-3.5 w-3.5" /> Show flagged only</>
+                          : <><ChevronDown className="h-3.5 w-3.5" /> Show all {p.sentence_results.length} sentences</>}
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Sidebar footer Links */}
+              <div className="p-4 border-t border-blue-500/10 bg-blue-950/20 flex items-center justify-center gap-3">
+                <Link to="/history">
+                  <Button variant="outline" size="sm" className="text-xs border-blue-500/30 text-slate-300 hover:bg-blue-500/10 h-8 px-3">
+                    <History className="mr-1.5 h-3.5 w-3.5" /> History
+                  </Button>
+                </Link>
+                {selectedGroupId && (
+                  <Link to={`/compare/${selectedGroupId}`}>
+                    <Button variant="outline" size="sm" className="text-xs border-blue-500/30 text-slate-300 hover:bg-blue-500/10 h-8 px-3">
+                      <Users className="mr-1.5 h-3.5 w-3.5" /> View Leaderboard
+                  </Button>
+                  </Link>
+                )}
+                {!selectedGroupId && user && (
+                  <Link to="/groups">
+                    <Button variant="outline" size="sm" className="text-xs border-blue-500/30 text-slate-300 hover:bg-blue-500/10 h-8 px-3">
+                      <Users className="mr-1.5 h-3.5 w-3.5" /> Join Group
+                    </Button>
+                  </Link>
+                )}
+              </div>
+
+            </div>
+          )}
+
+        </div>
+
+      </div>
     </div>
   );
 };

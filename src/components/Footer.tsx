@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { Shield } from "lucide-react";
 
 const Footer = () => (
-  <footer style={{ borderTop: "2px solid #2563eb", padding: "48px 24px 32px", marginTop: "auto" }}>
+  <footer style={{ borderTop: "1px solid rgba(59, 130, 246, 0.15)", padding: "48px 24px 32px", marginTop: "auto" }}>
     <div style={{ maxWidth: 1200, margin: "0 auto" }}>
       <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "flex-start", gap: 32, marginBottom: 40 }}>
         <div>
@@ -37,7 +37,7 @@ const Footer = () => (
           </div>
         </div>
       </div>
-      <div style={{ borderTop: "1px solid #2563eb", paddingTop: 20, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
+      <div style={{ borderTop: "1px solid rgba(59, 130, 246, 0.15)", paddingTop: 20, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
         <p style={{ fontSize: 12, color: "#ffffff", opacity: 0.6 }}>© 2025 Authentiq. All rights reserved.</p>
         <p style={{ fontSize: 12, color: "#ffffff", opacity: 0.6 }}>Built for academic integrity.</p>
       </div>

@@ -1,78 +1,121 @@
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800&family=Geist+Mono:wght@400;500&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* ── Design System ─────────────────────────────────────────────────────────── */
-/* Tone: Refined dark professional. Like Linear / Vercel / Supabase.           */
-/* No glows. No gradients on buttons. Precision spacing. Real product feel.    */
-
-@import url('https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800&family=Geist+Mono:wght@400;500&display=swap');
-
 @layer base {
   :root {
-    --background: 0 0% 4%;          /* #0a0a0a */
-    --foreground: 0 0% 95%;
+    --background: 222 47% 2%;
+    --foreground: 210 40% 98%;
 
-    --card: 0 0% 6%;
-    --card-foreground: 0 0% 95%;
+    --card: 222 47% 5%;
+    --card-foreground: 210 40% 98%;
 
-    --popover: 0 0% 7%;
-    --popover-foreground: 0 0% 95%;
+    --popover: 222 47% 4%;
+    --popover-foreground: 210 40% 98%;
 
-    --primary: 0 0% 96%;            /* near-white — buttons/cta */
-    --primary-foreground: 0 0% 4%;
+    --primary: 217 91% 56%;
+    --primary-foreground: 222 47% 2%;
 
-    --secondary: 0 0% 10%;
-    --secondary-foreground: 0 0% 80%;
+    --secondary: 222 30% 10%;
+    --secondary-foreground: 210 40% 90%;
 
-    --muted: 0 0% 9%;
-    --muted-foreground: 0 0% 50%;
+    --muted: 222 30% 8%;
+    --muted-foreground: 215 20% 65%;
 
-    --accent: 213 94% 60%;          /* #3B82F6 — blue accent only for data/score */
+    --accent: 217 91% 60%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 0 0% 12%;
-    --input: 0 0% 9%;
-    --ring: 0 0% 50%;
+    --border: 217 91% 60% / 0.15;
+    --input: 222 30% 8%;
+    --ring: 217 91% 56%;
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
+
+    --shadow-subtle: 0 0 0 1px rgba(59, 130, 246, 0.1);
   }
 }
 
 @layer base {
-  * { @apply border-border; }
+  * {
+    @apply border-border;
+  }
+
   body {
     @apply bg-background text-foreground;
     font-family: 'Geist', system-ui, -apple-system, sans-serif;
     font-feature-settings: "rlig" 1, "calt" 1, "ss01" 1;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    background-color: #03050a;
   }
+
   ::selection {
-    background: hsl(213 94% 60% / 0.25);
-    color: hsl(0 0% 95%);
+    background: rgba(37, 99, 235, 0.3);
+    color: #ffffff;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: 'Geist', sans-serif;
   }
 }
 
 @layer components {
-  /* ── Cards ── */
   .card-base {
-    @apply bg-card border border-border rounded-xl;
+    @apply bg-card border border-border/80 rounded-2xl transition-all duration-300;
   }
 
-  /* ── Accent score colors (data only — not UI chrome) ── */
-  .score-excellent { color: #22c55e; }
-  .score-good      { color: #84cc16; }
-  .score-fair      { color: #f59e0b; }
-  .score-poor      { color: #ef4444; }
+  .glass-panel {
+    background: #080d1a;
+    border: 1px solid rgba(59, 130, 246, 0.15);
+    border-radius: var(--radius);
+  }
 
-  /* ── Subtle divider ── */
-  .divider { @apply border-t border-border; }
+  .glass-panel-hover {
+    @apply transition-all duration-300;
+  }
 
-  /* ── Mono for numbers/code ── */
+  .glass-panel-hover:hover {
+    border-color: rgba(59, 130, 246, 0.3);
+    transform: translateY(-2px);
+  }
+
+  /* Solid Buttons */
+  .btn-primary {
+    background: #2563eb;
+    @apply text-white font-semibold rounded-xl hover:bg-blue-600 active:scale-95 transition-all duration-200;
+  }
+
+  .btn-secondary {
+    background: #0f172a;
+    border: 1px solid rgba(59, 130, 246, 0.15);
+    @apply text-foreground font-medium rounded-xl hover:bg-slate-800 transition-all duration-200;
+  }
+
+  /* Accent score colors */
+  .score-excellent {
+    color: #3b82f6;
+  }
+
+  .score-good {
+    color: #60a5fa;
+  }
+
+  .score-fair {
+    color: #93c5fd;
+  }
+
+  .score-poor {
+    color: #bfdbfe;
+  }
+
+  /* Mono for numbers/code */
   .mono {
     font-family: 'Geist Mono', 'Fira Code', monospace;
     font-feature-settings: "tnum" 1;
@@ -80,39 +123,70 @@
 }
 
 @layer utilities {
-  /* ── Animations ── */
+  .text-brand {
+    color: #ffffff;
+  }
+
+  .bg-brand-glow {
+    background: transparent;
+  }
+
+  /* Custom Animations */
   .animate-fade-in {
     animation: fadeIn 0.4s ease-out both;
   }
+
   .animate-fade-up {
     animation: fadeUp 0.5s ease-out both;
   }
+
   .animate-slide-down {
     animation: slideDown 0.25s ease-out both;
   }
 
   @keyframes fadeIn {
-    from { opacity: 0; }
-    to   { opacity: 1; }
-  }
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(12px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-  @keyframes slideDown {
-    from { opacity: 0; transform: translateY(-6px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-  @keyframes spin {
-    from { transform: rotate(0deg); }
-    to   { transform: rotate(360deg); }
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
   }
 
-  /* ── Text gradient (subtle — only for brand name) ── */
-  .text-brand {
-    background: linear-gradient(135deg, #fff 0%, rgba(255,255,255,0.7) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+  @keyframes fadeUp {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-8px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }

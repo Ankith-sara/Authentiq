@@ -7,7 +7,7 @@ import { AuthProvider } from "./contexts/AuthContext";
 import Index from "./pages/Index";
 import About from "./pages/About";
 import Beta from "./pages/Beta";
-import Demo from "./pages/Demo";
+import Checker from "./pages/Checker";
 import Auth from "./pages/Auth";
 import Groups from "./pages/Groups";
 import Compare from "./pages/Compare";
@@ -27,7 +27,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/about" element={<About />} />
-            <Route path="/demo" element={<Demo />} />
+            <Route path="/checker" element={<Checker />} />
             <Route path="/beta" element={<Beta />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/groups" element={<Groups />} />

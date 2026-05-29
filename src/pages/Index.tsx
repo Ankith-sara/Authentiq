@@ -4,98 +4,82 @@ import Footer from "@/components/Footer";
 import { ArrowRight, Users, Scan, CheckCircle2, Shield, Zap, History, Brain, FileText } from "lucide-react";
 
 const Chip = ({ children }: { children: React.ReactNode }) => (
-  <span style={{ display: "inline-flex", alignItems: "center", padding: "4px 10px", borderRadius: 99, fontSize: 12, fontWeight: 500, color: "#ffffff", border: "1px solid #2563eb", background: "rgba(37, 99, 235, 0.1)" }}>
+  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold text-blue-300 border border-blue-500/20 bg-blue-500/10 backdrop-blur-sm animate-fade-in">
     {children}
   </span>
 );
 
 const FeatureCard = ({ icon: Icon, title, desc }: { icon: React.ElementType; title: string; desc: string }) => (
-  <div style={{ padding: "24px", borderRadius: 12, border: "1px solid #2563eb", background: "rgba(37, 99, 235, 0.05)", transition: "all 0.2s" }}
-    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = "#3b82f6"; (e.currentTarget as HTMLElement).style.background = "rgba(37, 99, 235, 0.1)"; }}
-    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = "#2563eb"; (e.currentTarget as HTMLElement).style.background = "rgba(37, 99, 235, 0.05)"; }}
-  >
-    <div style={{ width: 36, height: 36, borderRadius: 8, background: "#2563eb", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 16 }}>
-      <Icon size={16} color="#ffffff" />
+  <div className="glass-panel glass-panel-hover p-6 flex flex-col items-start gap-4">
+    <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center">
+      <Icon size={18} className="text-white" />
     </div>
-    <h3 style={{ fontSize: 14, fontWeight: 600, color: "#ffffff", marginBottom: 6 }}>{title}</h3>
-    <p style={{ fontSize: 13, color: "#ffffff", lineHeight: 1.6, opacity: 0.9 }}>{desc}</p>
+    <div>
+      <h3 className="text-sm font-semibold text-white mb-1.5">{title}</h3>
+      <p className="text-xs text-slate-300 leading-relaxed">{desc}</p>
+    </div>
   </div>
 );
 
 const Index = () => (
-  <div style={{ minHeight: "100vh", background: "#000000" }}>
+  <div className="min-h-screen bg-background relative overflow-hidden">
     <Navigation />
 
-    <section style={{ padding: "140px 24px 100px", maxWidth: 1200, margin: "0 auto", textAlign: "center" }}>
-      <h1 className="animate-fade-up" style={{
-        fontSize: "clamp(36px, 6vw, 72px)", fontWeight: 800, letterSpacing: "-0.04em",
-        lineHeight: 1.05, color: "#ffffff", marginBottom: 24, animationDelay: "0.05s"
-      }}>
+    {/* Hero Section */}
+    <section className="pt-32 pb-20 px-6 max-w-5xl mx-auto text-center relative z-10">
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-brand-glow -z-10 pointer-events-none" />
+      
+      <h1 className="animate-fade-up text-5xl md:text-7xl font-extrabold tracking-tight leading-none text-white mb-6">
         Be original<br />
-        <span style={{ color: "#2563eb" }}>even when AI writes with you.</span>
+        <span className="text-brand">even when AI writes with you.</span>
       </h1>
 
-      <p className="animate-fade-up" style={{ fontSize: 18, color: "#ffffff", maxWidth: 520, margin: "0 auto 40px", lineHeight: 1.6, animationDelay: "0.1s", opacity: 0.9 }}>
+      <p className="animate-fade-up text-base md:text-lg text-slate-300 max-w-lg mx-auto mb-10 leading-relaxed opacity-90">
         Authentiq detects how unique your AI-assisted writing is and shows exactly what needs to change.
       </p>
 
-      <div className="animate-fade-up" style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap", animationDelay: "0.15s" }}>
-        <Link to="/demo" style={{
-          display: "inline-flex", alignItems: "center", gap: 8, padding: "12px 24px",
-          borderRadius: 8, fontSize: 14, fontWeight: 600, background: "#2563eb", color: "#ffffff",
-          textDecoration: "none", transition: "background 0.15s",
-        }}
-        onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = "#3b82f6"}
-        onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = "#2563eb"}
-        >
+      <div className="animate-fade-up flex flex-wrap gap-4 justify-center items-center">
+        <Link to="/demo" className="btn-primary px-6 py-3 text-sm font-semibold inline-flex items-center gap-2">
           <Zap size={14} /> Try authentiq
         </Link>
-        <Link to="/beta" style={{
-          display: "inline-flex", alignItems: "center", gap: 8, padding: "12px 24px",
-          borderRadius: 8, fontSize: 14, fontWeight: 500, color: "#ffffff",
-          border: "1px solid #2563eb", background: "transparent",
-          textDecoration: "none", transition: "all 0.15s",
-        }}
-        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = "#3b82f6"; (e.currentTarget as HTMLElement).style.background = "rgba(37, 99, 235, 0.1)"; }}
-        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = "#2563eb"; (e.currentTarget as HTMLElement).style.background = "transparent"; }}
-        >
-          Join the Beta <ArrowRight size={14} />
+        <Link to="/beta" className="btn-secondary px-6 py-3 text-sm font-medium inline-flex items-center gap-2 hover:text-white">
+          Join the Beta
         </Link>
       </div>
     </section>
 
-    {/* ── Score preview ── */}
-    <section style={{ padding: "0 24px 100px", maxWidth: 800, margin: "0 auto" }}>
-      <div style={{ borderRadius: 16, border: "2px solid #2563eb", background: "#000000", overflow: "hidden" }}>
-        <div style={{ padding: "14px 16px", borderBottom: "2px solid #2563eb", display: "flex", alignItems: "center", gap: 8 }}>
-          <div style={{ width: 10, height: 10, borderRadius: "50%", background: "#2563eb" }} />
-          <div style={{ width: 10, height: 10, borderRadius: "50%", background: "#2563eb" }} />
-          <div style={{ width: 10, height: 10, borderRadius: "50%", background: "#2563eb" }} />
-          <span style={{ fontSize: 12, color: "#ffffff", marginLeft: 8, fontFamily: "monospace" }}>authentiq — check-full</span>
+    {/* Score Preview Section */}
+    <section className="px-6 pb-24 max-w-3xl mx-auto animate-fade-up relative z-10">
+      <div className="glass-panel overflow-hidden border border-blue-500/20 shadow-glow">
+        <div className="px-6 py-4 border-b border-blue-500/10 flex items-center gap-2 bg-blue-950/20">
+          <div className="w-2.5 h-2.5 rounded-full bg-red-500/60" />
+          <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/60" />
+          <div className="w-2.5 h-2.5 rounded-full bg-green-500/60" />
+          <span className="text-xs text-blue-300 ml-4 font-mono">authentiq — check-full</span>
         </div>
-        <div style={{ padding: "28px 32px" }}>
-          <div style={{ display: "flex", gap: 20, flexWrap: "wrap", marginBottom: 24 }}>
+        <div className="p-6 md:p-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
             {[
-              { label: "Combined Originality", value: "81%", color: "#2563eb" },
-              { label: "Plagiarism Score", value: "12%", color: "#3b82f6" },
-              { label: "AI Probability", value: "34%", color: "#60a5fa" },
-              { label: "Processing", value: "1.2s", color: "#ffffff" },
-            ].map(({ label, value, color }) => (
-              <div key={label} style={{ flex: 1, minWidth: 120, padding: "16px", borderRadius: 10, border: "1px solid #2563eb", background: "rgba(37, 99, 235, 0.05)" }}>
-                <p style={{ fontSize: 11, color: "#ffffff", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 500, opacity: 0.8 }}>{label}</p>
-                <p style={{ fontSize: 22, fontWeight: 700, color, fontFamily: "monospace" }}>{value}</p>
+              { label: "Combined Originality", value: "81%", color: "text-blue-300", bg: "bg-blue-500/5 border-blue-500/15" },
+              { label: "Plagiarism Score", value: "12%", color: "text-blue-400", bg: "bg-blue-500/5 border-blue-500/15" },
+              { label: "AI Probability", value: "34%", color: "text-blue-400", bg: "bg-blue-500/5 border-blue-500/15" },
+              { label: "Processing", value: "1.2s", color: "text-slate-200", bg: "bg-slate-500/5 border-slate-500/15" },
+            ].map(({ label, value, color, bg }) => (
+              <div key={label} className={`p-4 rounded-xl border ${bg} backdrop-blur-sm`}>
+                <p className="text-[10px] text-slate-400 mb-1.5 uppercase tracking-wider font-semibold">{label}</p>
+                <p className={`text-xl font-bold font-mono ${color}`}>{value}</p>
               </div>
             ))}
           </div>
-          <div style={{ background: "rgba(37, 99, 235, 0.05)", borderRadius: 8, padding: "14px 16px", border: "1px solid #2563eb" }}>
-            <p style={{ fontSize: 13, color: "#ffffff", marginBottom: 8, fontWeight: 500 }}>Flagged sentences</p>
+          <div className="bg-blue-500/5 border border-blue-500/15 rounded-xl p-5">
+            <p className="text-xs font-semibold text-blue-300 mb-3 uppercase tracking-wider">Flagged sentences</p>
             {[
               { text: "Furthermore, AI systems have demonstrated remarkable capabilities in recent years.", sim: 89 },
               { text: "It is important to note that these findings have significant implications.", sim: 82 },
             ].map(({ text, sim }) => (
-              <div key={text} style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: 8 }}>
-                <span style={{ fontSize: 11, fontWeight: 600, color: "#ffffff", background: "#2563eb", padding: "2px 6px", borderRadius: 4, whiteSpace: "nowrap", marginTop: 2, fontFamily: "monospace" }}>{sim}%</span>
-                <span style={{ fontSize: 13, color: "#ffffff", lineHeight: 1.5, opacity: 0.9 }}>{text}</span>
+              <div key={text} className="flex items-start gap-3 mb-3 last:mb-0">
+                <span className="text-[10px] font-bold text-background bg-blue-300 px-2 py-0.5 rounded-md font-mono mt-0.5">{sim}%</span>
+                <p className="text-xs text-slate-300 leading-relaxed">{text}</p>
               </div>
             ))}
           </div>
@@ -103,122 +87,115 @@ const Index = () => (
       </div>
     </section>
 
-    <section style={{ padding: "80px 24px", borderTop: "2px solid #2563eb", borderBottom: "2px solid #2563eb" }}>
-      <div style={{ maxWidth: 640, margin: "0 auto", textAlign: "center" }}>
-        <h2 style={{ fontSize: "clamp(24px, 4vw, 40px)", fontWeight: 700, letterSpacing: "-0.03em", color: "#ffffff", marginBottom: 16, lineHeight: 1.15 }}>
-          AI makes everything easier —<br />
-          <span style={{ color: "#2563eb" }}>and everyone the same.</span>
+    {/* Statement Banner */}
+    <section className="py-20 px-6 border-y border-blue-500/10 bg-blue-950/15 relative z-10">
+      <div className="max-w-2xl mx-auto text-center">
+        <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight text-white mb-4 leading-tight">
+          AI makes everything easier <br />
+          <span className="text-brand">and everyone the same.</span>
         </h2>
-        <p style={{ fontSize: 16, color: "#ffffff", lineHeight: 1.7, opacity: 0.9 }}>
+        <p className="text-sm md:text-base text-slate-300 leading-relaxed opacity-90">
           As AI tools become universal, students and professionals unknowingly produce near-identical content. Authentiq detects duplication at the semantic level — before it becomes a problem.
         </p>
       </div>
     </section>
 
-    <section style={{ padding: "80px 24px", maxWidth: 1100, margin: "0 auto" }}>
-      <p style={{ fontSize: 12, fontWeight: 600, color: "#2563eb", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 12 }}>How it works</p>
-      <h2 style={{ fontSize: "clamp(22px, 3vw, 32px)", fontWeight: 700, letterSpacing: "-0.03em", color: "#ffffff", marginBottom: 48 }}>Real detection. Not keyword matching.</h2>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12 }}>
-        <FeatureCard icon={Scan} title="Semantic Similarity" desc="Vector embeddings (all-MiniLM-L6-v2) compare meaning, not just words. Can't be bypassed by paraphrasing." />
-        <FeatureCard icon={Brain} title="AI Detection" desc="GPT-2 perplexity, sentence burstiness, structural uniformity, and 40+ AI phrase patterns." />
-        <FeatureCard icon={History} title="Cloud History" desc="Every check saved. Synced to your account. See your originality score improve over time." />
-        <FeatureCard icon={FileText} title="PDF Support" desc="Upload PDFs directly. Text is extracted and analyzed the same way as pasted text." />
-        <FeatureCard icon={Shield} title="Privacy First" desc="Your text is never stored publicly. History is private to your account via row-level security." />
-        <FeatureCard icon={Users} title="Group Leaderboards" desc="Create groups for your class or team. See who's producing truly original work." />
+    {/* Features Grid */}
+    <section className="py-24 px-6 max-w-5xl mx-auto relative z-10">
+      <p className="text-xs font-semibold text-blue-400 uppercase tracking-wider mb-2">How it works</p>
+      <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-white mb-12">Real detection. Not keyword matching.</h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <FeatureCard icon={Scan} title="Semantic Similarity" desc="Vector embeddings compare meaning, not just words. Can't be bypassed by simple paraphrasing or word swapping." />
+        <FeatureCard icon={Brain} title="AI Detection" desc="Deep Multi-LLM perplexity ensemble scoring, sentence burstiness, and 40+ dynamic AI writing patterns." />
+        <FeatureCard icon={History} title="Cloud History" desc="Every audit check is securely logged, and is synced to your profile dashboard so you can audit over time." />
+        <FeatureCard icon={FileText} title="Document Extraction" desc="Upload PDFs and text files directly. System automatically processes and chunks paragraphs seamlessly." />
+        <FeatureCard icon={Shield} title="Privacy First" desc="Your documents are never exposed to public crawlers. Secured via Supabase Row-Level Security." />
+        <FeatureCard icon={Users} title="Group Leaderboards" desc="Create workspaces or classrooms, distribute invitations, and review originality rankings on a live dashboard." />
       </div>
     </section>
 
-    <section style={{ padding: "80px 24px", borderTop: "2px solid #2563eb", borderBottom: "2px solid #2563eb" }}>
-      <div style={{ maxWidth: 1100, margin: "0 auto", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 64, alignItems: "center" }} className="block sm:grid">
+    {/* Live Leaderboard Section */}
+    <section className="py-20 px-6 border-t border-blue-500/10 bg-blue-950/5 relative z-10">
+      <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
         <div>
           <Chip>For Classrooms & Teams</Chip>
-          <h2 style={{ fontSize: "clamp(22px, 3vw, 36px)", fontWeight: 700, letterSpacing: "-0.03em", color: "#ffffff", margin: "16px 0 16px", lineHeight: 1.2 }}>
+          <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight text-white my-6 leading-tight">
             See how original your class really is.
           </h2>
-          <p style={{ fontSize: 15, color: "#ffffff", lineHeight: 1.7, marginBottom: 28, opacity: 0.9 }}>
+          <p className="text-sm md:text-base text-slate-300 leading-relaxed mb-8 opacity-90">
             Create a group, share the link. Every submission appears on a live leaderboard ranked by originality score. Spot AI-copied answers instantly.
           </p>
-          <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 32 }}>
+          <div className="flex flex-col gap-4 mb-8">
             {[
               { who: "Teachers", detail: "Catch students submitting identical AI outputs before grades are posted" },
               { who: "Students", detail: "Know if your rewrite actually improved your score before submitting" },
               { who: "Teams", detail: "Prevent blog posts, reports, and proposals from overlapping" },
             ].map(({ who, detail }) => (
-              <div key={who} style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
-                <CheckCircle2 size={14} color="#2563eb" style={{ marginTop: 3, flexShrink: 0 }} />
-                <p style={{ fontSize: 13, color: "#ffffff", opacity: 0.9 }}><span style={{ color: "#ffffff", fontWeight: 500 }}>{who} — </span>{detail}</p>
+              <div key={who} className="flex gap-3 items-start">
+                <CheckCircle2 size={16} className="text-blue-400 mt-0.5 flex-shrink-0" />
+                <p className="text-xs md:text-sm text-slate-300 leading-normal"><span className="text-white font-semibold">{who} — </span>{detail}</p>
               </div>
             ))}
           </div>
-          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-            <Link to="/groups" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "10px 20px", borderRadius: 8, fontSize: 14, fontWeight: 600, background: "#2563eb", color: "#ffffff", textDecoration: "none" }}>
+          <div className="flex flex-wrap gap-4">
+            <Link to="/groups" className="btn-primary px-6 py-2.5 text-sm font-semibold inline-flex items-center gap-2">
               <Users size={14} /> Create a Group
             </Link>
-            <Link to="/demo" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "10px 20px", borderRadius: 8, fontSize: 14, fontWeight: 500, color: "#ffffff", border: "1px solid #2563eb", textDecoration: "none" }}>
-              Try the Checker <ArrowRight size={14} />
+            <Link to="/demo" className="btn-secondary px-6 py-2.5 text-sm font-medium inline-flex items-center gap-2 hover:text-white">
+              Try the Checker
             </Link>
           </div>
         </div>
 
-        <div className="leaderboard-wrapper" style={{ borderRadius: 12, border: "2px solid #2563eb", background: "#000000", overflow: "hidden" }}>
-          <div style={{ padding: "16px 20px", borderBottom: "2px solid #2563eb", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div className="leaderboard-wrapper glass-panel overflow-hidden border border-blue-500/20 shadow-elegant">
+          <div className="px-6 py-4 border-b border-blue-500/10 flex justify-between items-center bg-blue-950/20">
             <div>
-              <p style={{ fontSize: 11, color: "#2563eb", marginBottom: 2 }}>CS101 — Assignment 3</p>
-              <p style={{ fontSize: 13, fontWeight: 600, color: "#ffffff" }}>Originality Leaderboard</p>
+              <p className="text-[10px] text-blue-400 font-semibold uppercase tracking-wider mb-0.5">CS101 — Assignment 3</p>
+              <p className="text-xs font-bold text-white">Originality Leaderboard</p>
             </div>
-            <span style={{ fontSize: 11, color: "#2563eb", display: "flex", alignItems: "center", gap: 5 }}>
-              <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#2563eb", display: "inline-block" }} /> Live
+            <span className="text-[10px] text-blue-300 flex items-center gap-1.5 font-semibold">
+              <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" /> Live
             </span>
           </div>
-          <div style={{ padding: "12px" }}>
+          <div className="p-4 space-y-2">
             {[
-              { rank: "1", name: "Arjun S.", score: 94, color: "#3b82f6" },
-              { rank: "2", name: "Priya M.", score: 81, color: "#60a5fa" },
-              { rank: "3", name: "You", score: 73, color: "#93c5fd", isYou: true },
-              { rank: "4", name: "Rahul K.", score: 58, color: "#2563eb" },
-              { rank: "5", name: "Sneha T.", score: 34, color: "#1d4ed8" },
-            ].map(({ rank, name, score, color, isYou }) => (
-              <div key={name} style={{
-                display: "flex", alignItems: "center", gap: 12, padding: "10px 12px", borderRadius: 8, marginBottom: 4,
-                background: isYou ? "rgba(37, 99, 235, 0.15)" : "transparent",
-                border: isYou ? "1px solid #2563eb" : "1px solid transparent",
-              }}>
-                <span style={{ fontSize: 12, color: "#ffffff", width: 16, textAlign: "center", fontFamily: "monospace" }}>{rank}</span>
-                <div style={{ flex: 1 }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 5 }}>
-                    <span style={{ fontSize: 13, fontWeight: isYou ? 600 : 400, color: "#ffffff" }}>
-                      {name}{isYou && <span style={{ fontSize: 10, color: "#ffffff", marginLeft: 6, background: "#2563eb", padding: "1px 5px", borderRadius: 3 }}>you</span>}
+              { rank: "1", name: "Arjun S.", score: 94, color: "bg-blue-500", textClass: "text-blue-400" },
+              { rank: "2", name: "Priya M.", score: 81, color: "bg-blue-500", textClass: "text-blue-300" },
+              { rank: "3", name: "You", score: 73, color: "bg-blue-600", textClass: "text-blue-300", isYou: true },
+              { rank: "4", name: "Rahul K.", score: 58, color: "bg-blue-700", textClass: "text-blue-400" },
+              { rank: "5", name: "Sneha T.", score: 34, color: "bg-blue-800", textClass: "text-blue-400" },
+            ].map(({ rank, name, score, color, textClass, isYou }) => (
+              <div key={name} className={`flex items-center gap-3 p-3 rounded-xl transition-all duration-300 ${isYou ? "bg-blue-500/10 border border-blue-500/20" : "hover:bg-white/5 border border-transparent"}`}>
+                <span className="text-xs text-slate-400 w-4 text-center font-mono">{rank}</span>
+                <div className="flex-1">
+                  <div className="flex justify-between items-center mb-1.5">
+                    <span className={`text-xs font-semibold ${isYou ? "text-blue-200" : "text-white"}`}>
+                      {name}{isYou && <span className="text-[9px] text-blue-950 font-bold ml-2 bg-blue-300 px-1.5 py-0.5 rounded-md uppercase tracking-wider font-sans">you</span>}
                     </span>
-                    <span style={{ fontSize: 12, fontWeight: 600, color, fontFamily: "monospace" }}>{score}%</span>
+                    <span className={`text-xs font-bold font-mono ${textClass}`}>{score}%</span>
                   </div>
-                  <div style={{ height: 3, borderRadius: 99, background: "rgba(37, 99, 235, 0.2)", overflow: "hidden" }}>
-                    <div style={{ width: `${score}%`, height: "100%", background: color, borderRadius: 99 }} />
+                  <div className="h-1.5 rounded-full bg-white/5 overflow-hidden">
+                    <div className={`h-full ${color} rounded-full`} style={{ width: `${score}%` }} />
                   </div>
                 </div>
               </div>
             ))}
-            <p style={{ fontSize: 11, color: "#2563eb", textAlign: "center", marginTop: 8 }}>5 of 24 submitted · updates live</p>
+            <p className="text-[10px] text-slate-400 text-center pt-2">5 of 24 submitted · updates live</p>
           </div>
         </div>
       </div>
     </section>
 
-    <section style={{ padding: "60px 20px", textAlign: "center" }}>
-      <h2 style={{ fontSize: "clamp(28px, 5vw, 56px)", fontWeight: 800, letterSpacing: "-0.04em", color: "#ffffff", marginBottom: 12 }}>
+    {/* Beta Waiting Call to Action */}
+    <section className="py-24 px-6 text-center relative z-10">
+      <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight text-white mb-4">
         Stay Authentiq.
       </h2>
-      <p style={{ fontSize: 16, color: "#ffffff", marginBottom: 24, maxWidth: 380, margin: "0 auto 36px", opacity: 0.9 }}>
+      <p className="text-sm md:text-base text-slate-300 mb-10 max-w-sm mx-auto opacity-90 leading-relaxed">
         Join the beta. Get early access to the originality platform built for the AI era.
       </p>
-      <Link to="/beta" style={{
-        display: "inline-flex", alignItems: "center", gap: 8, padding: "13px 28px",
-        borderRadius: 8, fontSize: 15, fontWeight: 600, background: "#2563eb", color: "#ffffff",
-        textDecoration: "none", transition: "background 0.15s",
-      }}
-      onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = "#3b82f6"}
-      onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = "#2563eb"}
-      >
-        Join Waitlist <ArrowRight size={15} />
+      <Link to="/beta" className="btn-primary px-8 py-3.5 text-sm font-semibold inline-flex items-center gap-2">
+        Join Waitlist
       </Link>
     </section>
 

@@ -602,15 +602,29 @@ def _heuristic_ai_probability(
     return float(max(0, min(100, probability))), reasoning, breakdown
 
 
-# =============================================================================
-# 8.  MAIN DETECTION FUNCTION
-# =============================================================================
+def sanitize_input_text(text: str) -> str:
+    """
+    Sanitize text to prevent adversarial bypasses:
+    1. Unicode canonical decomposition & composition (NFKC) -> maps homoglyphs to standard ASCII/Unicode.
+    2. Zero-width character stripping (\u200b, \u200c, \u200d, \ufeff).
+    3. Strip hidden control characters.
+    """
+    import unicodedata
+    # Normalize unicode characters
+    normalized = unicodedata.normalize("NFKC", text)
+    # Remove zero-width spaces and control characters (excluding newline and tab)
+    sanitized = re.sub(r'[\u200b-\u200d\ufeff\u0000-\u0008\u000b-\u000c\u000e-\u001f]', '', normalized)
+    return sanitized
+
 
 def detect_ai(text: str) -> dict:
     start = time.time()
 
+    text = sanitize_input_text(text)
+
     if len(text.strip()) < 20:
         return {"error": "Text too short for analysis.", "ai_probability": None}
+
 
     # ── Multi-LLM token scoring (primary signal) ──
     lm_scores        = multi_lm_score(text)

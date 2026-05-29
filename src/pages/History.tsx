@@ -80,8 +80,27 @@ export async function saveToHistory(
   }
 }
 
+interface SupabaseHistoryRow {
+  id: string;
+  created_at: string;
+  text_preview: string;
+  text_length: number;
+  combined_originality_score: number;
+  plagiarism_score: number;
+  originality_score: number;
+  flagged_sentences: number;
+  total_sentences: number;
+  ai_probability: number;
+  human_probability: number;
+  ai_verdict: string;
+  ai_confidence: string;
+  perplexity: number;
+  burstiness: number;
+  processing_ms: number;
+}
+
 // ── Convert Supabase row → HistoryEntry ───────────────────────────────────────
-function rowToEntry(row: any): HistoryEntry {
+function rowToEntry(row: SupabaseHistoryRow): HistoryEntry {
   return {
     id: row.id,
     timestamp: new Date(row.created_at).getTime(),
@@ -357,7 +376,7 @@ const HistoryPage = () => {
   ] as const;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div style={{ minHeight: "100vh", background: "#03050a" }}>
       <Navigation />
       <div style={{ paddingTop: 96, paddingBottom: 64 }}>
         <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 16px" }}>

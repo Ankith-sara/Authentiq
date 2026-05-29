@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -31,14 +31,13 @@ interface Group {
   created_by: string;
 }
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
-
+// Helpers
 const grade = (s: number | null) => {
   if (s === null) return { label: "N/A", color: "#6b7280", bg: "rgba(107,114,128,0.08)", bar: "#6b7280" };
-  if (s >= 85) return { label: "Excellent", color: "#22c55e", bg: "rgba(34,197,94,0.08)",  bar: "#22c55e" };
-  if (s >= 70) return { label: "Good",      color: "#84cc16", bg: "rgba(132,204,22,0.08)", bar: "#84cc16" };
-  if (s >= 50) return { label: "Fair",      color: "#f59e0b", bg: "rgba(245,158,11,0.08)", bar: "#f59e0b" };
-  return             { label: "Poor",       color: "#ef4444", bg: "rgba(239,68,68,0.08)",  bar: "#ef4444" };
+  if (s >= 85) return { label: "Excellent", color: "#22c55e", bg: "rgba(34,197,94,0.08)", bar: "#22c55e" };
+  if (s >= 70) return { label: "Good", color: "#84cc16", bg: "rgba(132,204,22,0.08)", bar: "#84cc16" };
+  if (s >= 50) return { label: "Fair", color: "#f59e0b", bg: "rgba(245,158,11,0.08)", bar: "#f59e0b" };
+  return { label: "Poor", color: "#ef4444", bg: "rgba(239,68,68,0.08)", bar: "#ef4444" };
 };
 
 const formatDate = (ts: string) => {
@@ -62,8 +61,7 @@ const RankIcon = ({ rank }: { rank: number }) => {
   return <span style={{ fontSize: 13, color: "#6b7280", fontWeight: 700, minWidth: 24, textAlign: "center" as const }}>#{rank}</span>;
 };
 
-// ── Submission Row ────────────────────────────────────────────────────────────
-
+// Submission Row 
 const SubmissionRow = ({
   submission, rank, isYou
 }: {
@@ -176,8 +174,6 @@ const SubmissionRow = ({
   );
 };
 
-// ── Main Page ─────────────────────────────────────────────────────────────────
-
 const Compare = () => {
   const { groupId } = useParams();
   const navigate = useNavigate();
@@ -190,22 +186,7 @@ const Compare = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [memberCount, setMemberCount] = useState(0);
 
-  useEffect(() => {
-    if (!user) { navigate("/auth"); return; }
-    fetchData();
-
-    const channel = supabase
-      .channel("submissions-live")
-      .on("postgres_changes", {
-        event: "*", schema: "public", table: "submissions",
-        filter: groupId ? `group_id=eq.${groupId}` : undefined,
-      }, () => fetchData())
-      .subscribe();
-
-    return () => { supabase.removeChannel(channel); };
-  }, [user, groupId]);
-
-  const fetchData = async (silent = false) => {
+  const fetchData = useCallback(async (silent = false) => {
     if (!silent) setLoading(true);
     else setRefreshing(true);
 
@@ -240,13 +221,29 @@ const Compare = () => {
         });
         setSubmissions(deduped);
       }
-    } catch (err: any) {
-      toast({ title: "Error loading data", description: err.message, variant: "destructive" });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Error loading data";
+      toast({ title: "Error loading data", description: message, variant: "destructive" });
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
-  };
+  }, [groupId, toast]);
+
+  useEffect(() => {
+    if (!user) { navigate("/auth"); return; }
+    fetchData();
+
+    const channel = supabase
+      .channel("submissions-live")
+      .on("postgres_changes", {
+        event: "*", schema: "public", table: "submissions",
+        filter: groupId ? `group_id=eq.${groupId}` : undefined,
+      }, () => fetchData())
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [user, groupId, navigate, fetchData]);
 
   const refresh = () => fetchData(true);
 

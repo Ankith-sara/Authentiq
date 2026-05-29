@@ -14,18 +14,18 @@ const Navigation = () => {
   const links = [
     { to: "/", label: "Home" },
     { to: "/about", label: "About" },
-    { to: "/demo", label: "Checker" },
+    { to: "/checker", label: "Checker" },
     { to: "/history", label: "History" },
   ];
 
   return (
-    <nav style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 50, background: "rgba(0,0,0,0.95)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", borderBottom: "2px solid #2563eb", }}>
+    <nav style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 50, background: "#03050a", borderBottom: "1px solid rgba(59, 130, 246, 0.15)", }}>
       <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 16px", display: "flex", alignItems: "center", justifyContent: "space-between", height: 56, }}>
         <Link to="/" onClick={close} style={{ display: "flex", alignItems: "center", gap: 8, textDecoration: "none", color: "inherit", }}>
-          <div style={{ width: 26, height: 26, background: "#2563eb", borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center", }}>
+          <div style={{ width: 26, height: 26, background: "#2563eb", borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center" }}>
             <Shield size={14} color="#ffffff" strokeWidth={2.5} />
           </div>
-          <span style={{ fontWeight: 700, fontSize: 20, letterSpacing: "-0.02em", color: "#ffffff", }}>Authentiq</span>
+          <span style={{ fontWeight: 700, fontSize: 20, letterSpacing: "-0.02em", color: "#ffffff", }} className="text-brand">Authentiq</span>
         </Link>
 
         {/* Desktop Navigation */}
@@ -34,9 +34,20 @@ const Navigation = () => {
             <Link
               key={to}
               to={to}
-              style={{ padding: "6px 12px", borderRadius: 6, fontSize: 14, fontWeight: 500, textDecoration: "none", color: "#ffffff", background: isActive(to) ? "#2563eb" : "transparent", transition: "all 0.15s", opacity: isActive(to) ? 1 : 0.7, }}
-              onMouseEnter={(e) => { if (!isActive(to)) { e.currentTarget.style.opacity = "1"; e.currentTarget.style.background = "rgba(37, 99, 235, 0.2)"; } }}
-              onMouseLeave={(e) => { if (!isActive(to)) { e.currentTarget.style.opacity = "0.7"; e.currentTarget.style.background = "transparent"; } }}
+              style={{
+                padding: "6px 12px",
+                borderRadius: 8,
+                fontSize: 14,
+                fontWeight: 500,
+                textDecoration: "none",
+                color: isActive(to) ? "#60a5fa" : "#ffffff",
+                background: isActive(to) ? "rgba(59, 130, 246, 0.12)" : "transparent",
+                border: isActive(to) ? "1px solid rgba(59, 130, 246, 0.25)" : "1px solid transparent",
+                transition: "all 0.2s",
+                opacity: isActive(to) ? 1 : 0.85,
+              }}
+              onMouseEnter={(e) => { if (!isActive(to)) { e.currentTarget.style.opacity = "1"; e.currentTarget.style.background = "rgba(59, 130, 246, 0.08)"; e.currentTarget.style.borderColor = "rgba(59, 130, 246, 0.12)"; } }}
+              onMouseLeave={(e) => { if (!isActive(to)) { e.currentTarget.style.opacity = "0.85"; e.currentTarget.style.background = "transparent"; e.currentTarget.style.borderColor = "transparent"; } }}
             >
               {label}
             </Link>
@@ -49,17 +60,31 @@ const Navigation = () => {
             <>
               <Link
                 to="/groups"
-                style={{ padding: "6px 12px", borderRadius: 6, fontSize: 14, fontWeight: 500, color: "#ffffff", background: isActive("/groups") ? "#2563eb" : "transparent", textDecoration: "none", display: "flex", alignItems: "center", gap: 6, transition: "all 0.15s", opacity: isActive("/groups") ? 1 : 0.7, }}
-                onMouseEnter={(e) => { if (!isActive("/groups")) { e.currentTarget.style.opacity = "1"; e.currentTarget.style.background = "rgba(37, 99, 235, 0.2)"; } }}
-                onMouseLeave={(e) => { if (!isActive("/groups")) { e.currentTarget.style.opacity = "0.7"; e.currentTarget.style.background = "transparent"; } }}
+                style={{
+                  padding: "6px 12px",
+                  borderRadius: 8,
+                  fontSize: 14,
+                  fontWeight: 500,
+                  color: isActive("/groups") ? "#60a5fa" : "#ffffff",
+                  background: isActive("/groups") ? "rgba(59, 130, 246, 0.12)" : "transparent",
+                  border: isActive("/groups") ? "1px solid rgba(59, 130, 246, 0.25)" : "1px solid transparent",
+                  textDecoration: "none",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                  transition: "all 0.2s",
+                  opacity: isActive("/groups") ? 1 : 0.85,
+                }}
+                onMouseEnter={(e) => { if (!isActive("/groups")) { e.currentTarget.style.opacity = "1"; e.currentTarget.style.background = "rgba(59, 130, 246, 0.08)"; e.currentTarget.style.borderColor = "rgba(59, 130, 246, 0.12)"; } }}
+                onMouseLeave={(e) => { if (!isActive("/groups")) { e.currentTarget.style.opacity = "0.85"; e.currentTarget.style.background = "transparent"; e.currentTarget.style.borderColor = "transparent"; } }}
               >
                 <Users size={14} /> Groups
               </Link>
               <button
                 onClick={signOut}
-                style={{ padding: "6px 12px", borderRadius: 6, fontSize: 14, fontWeight: 500, color: "#ffffff", background: "transparent", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 6, transition: "all 0.15s", opacity: 0.7, }}
-                onMouseEnter={(e) => { e.currentTarget.style.opacity = "1"; e.currentTarget.style.background = "rgba(37, 99, 235, 0.2)"; }}
-                onMouseLeave={(e) => { e.currentTarget.style.opacity = "0.7"; e.currentTarget.style.background = "transparent"; }}
+                style={{ padding: "6px 12px", borderRadius: 8, fontSize: 14, fontWeight: 500, color: "#ffffff", background: "transparent", border: "1px solid transparent", cursor: "pointer", display: "flex", alignItems: "center", gap: 6, transition: "all 0.2s", opacity: 0.85, }}
+                onMouseEnter={(e) => { e.currentTarget.style.opacity = "1"; e.currentTarget.style.background = "rgba(244, 63, 94, 0.08)"; e.currentTarget.style.borderColor = "rgba(244, 63, 94, 0.15)"; e.currentTarget.style.color = "#fda4af"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.opacity = "0.85"; e.currentTarget.style.background = "transparent"; e.currentTarget.style.borderColor = "transparent"; e.currentTarget.style.color = "#ffffff"; }}
               >
                 <LogOut size={14} /> Sign Out
               </button>
@@ -68,17 +93,17 @@ const Navigation = () => {
             <>
               <Link
                 to="/auth"
-                style={{ padding: "6px 12px", borderRadius: 6, fontSize: 14, fontWeight: 500, color: "#ffffff", textDecoration: "none", transition: "all 0.15s", opacity: 0.7, }}
-                onMouseEnter={(e) => { e.currentTarget.style.opacity = "1"; e.currentTarget.style.background = "rgba(37, 99, 235, 0.2)"; }}
-                onMouseLeave={(e) => { e.currentTarget.style.opacity = "0.7"; e.currentTarget.style.background = "transparent"; }}
+                style={{ padding: "6px 12px", borderRadius: 8, fontSize: 14, fontWeight: 500, color: "#ffffff", textDecoration: "none", transition: "all 0.2s", opacity: 0.85, border: "1px solid transparent" }}
+                onMouseEnter={(e) => { e.currentTarget.style.opacity = "1"; e.currentTarget.style.background = "rgba(59, 130, 246, 0.08)"; e.currentTarget.style.borderColor = "rgba(59, 130, 246, 0.12)"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.opacity = "0.85"; e.currentTarget.style.background = "transparent"; e.currentTarget.style.borderColor = "transparent"; }}
               >
                 Sign In
               </Link>
               <Link
                 to="/beta"
-                style={{ padding: "6px 14px", borderRadius: 6, fontSize: 14, fontWeight: 600, color: "#ffffff", background: "#2563eb", textDecoration: "none", transition: "background 0.15s", }}
-                onMouseEnter={(e) => e.currentTarget.style.background = "#3b82f6"}
-                onMouseLeave={(e) => e.currentTarget.style.background = "#2563eb"}
+                style={{ padding: "6px 14px", borderRadius: 8, fontSize: 14, fontWeight: 600, color: "#ffffff", background: "#2563eb", textDecoration: "none", transition: "all 0.2s" }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = "#1d4ed8"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = "#2563eb"; }}
               >
                 Join Beta
               </Link>
@@ -90,8 +115,8 @@ const Navigation = () => {
         <button
           onClick={() => setOpen(!open)}
           className="mobile-menu-btn"
-          style={{ display: "none", background: "none", border: "none", cursor: "pointer", color: "#ffffff", padding: 8, borderRadius: 6, transition: "background 0.15s", }}
-          onMouseEnter={(e) => e.currentTarget.style.background = "rgba(37, 99, 235, 0.2)"}
+          style={{ display: "none", background: "none", border: "none", cursor: "pointer", color: "#ffffff", padding: 8, borderRadius: 8, transition: "background 0.2s", }}
+          onMouseEnter={(e) => e.currentTarget.style.background = "rgba(59, 130, 246, 0.08)"}
           onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
         >
           {open ? <X size={22} /> : <Menu size={22} />}
@@ -101,31 +126,31 @@ const Navigation = () => {
       {/* Mobile Menu */}
       {
         open && (
-          <div className="mobile-menu" style={{ borderTop: "2px solid #2563eb", background: "#000000", padding: "12px 16px 16px", maxHeight: "calc(100vh - 56px)", overflowY: "auto", }}>
+          <div className="mobile-menu" style={{ borderTop: "1px solid rgba(59, 130, 246, 0.15)", background: "#080d1a", padding: "12px 16px 16px", maxHeight: "calc(100vh - 56px)", overflowY: "auto", }}>
             {/* Main Links */}
             {links.map(({ to, label }) => (
-              <Link key={to} to={to} onClick={close} style={{ display: "block", padding: "12px 14px", borderRadius: 8, fontSize: 15, fontWeight: 500, textDecoration: "none", marginBottom: 4, color: "#ffffff", background: isActive(to) ? "#2563eb" : "transparent", transition: "background 0.15s", }}>
+              <Link key={to} to={to} onClick={close} style={{ display: "block", padding: "12px 14px", borderRadius: 8, fontSize: 15, fontWeight: 500, textDecoration: "none", marginBottom: 4, color: isActive(to) ? "#60a5fa" : "#ffffff", background: isActive(to) ? "rgba(59, 130, 246, 0.12)" : "transparent", border: isActive(to) ? "1px solid rgba(59, 130, 246, 0.25)" : "1px solid transparent", transition: "all 0.2s", }}>
                 {label}
               </Link>
             ))}
 
-            <div style={{ borderTop: "1px solid rgba(37, 99, 235, 0.3)", marginTop: 8, marginBottom: 8, }} />
+            <div style={{ borderTop: "1px solid rgba(59, 130, 246, 0.15)", marginTop: 8, marginBottom: 8, }} />
             {/* User Actions */}
             {user ? (
               <>
-                <Link to="/groups" onClick={close} style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 14px", borderRadius: 8, fontSize: 15, fontWeight: 500, color: "#ffffff", textDecoration: "none", marginBottom: 4, background: isActive("/groups") ? "#2563eb" : "transparent", transition: "background 0.15s", }}>
+                <Link to="/groups" onClick={close} style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 14px", borderRadius: 8, fontSize: 15, fontWeight: 500, color: isActive("/groups") ? "#60a5fa" : "#ffffff", textDecoration: "none", marginBottom: 4, background: isActive("/groups") ? "rgba(59, 130, 246, 0.12)" : "transparent", border: isActive("/groups") ? "1px solid rgba(59, 130, 246, 0.25)" : "1px solid transparent", transition: "all 0.2s", }}>
                   <Users size={16} /> Groups
                 </Link>
-                <button onClick={() => { signOut(); close(); }} style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 14px", borderRadius: 8, fontSize: 15, fontWeight: 500, color: "#ffffff", background: "transparent", border: "none", cursor: "pointer", width: "100%", textAlign: "left", transition: "background 0.15s", }}>
+                <button onClick={() => { signOut(); close(); }} style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 14px", borderRadius: 8, fontSize: 15, fontWeight: 500, color: "#ffffff", background: "transparent", border: "none", cursor: "pointer", width: "100%", textAlign: "left", transition: "background 0.2s", }}>
                   <LogOut size={16} /> Sign Out
                 </button>
               </>
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 4, }}>
-                <Link to="/auth" onClick={close} style={{ padding: "12px", borderRadius: 8, fontSize: 15, fontWeight: 500, textAlign: "center", color: "#ffffff", border: "1px solid #2563eb", textDecoration: "none", transition: "background 0.15s", }}>
+                <Link to="/auth" onClick={close} style={{ padding: "12px", borderRadius: 8, fontSize: 15, fontWeight: 500, textAlign: "center", color: "#ffffff", border: "1px solid rgba(59, 130, 246, 0.25)", textDecoration: "none", transition: "all 0.2s", }}>
                   Sign In
                 </Link>
-                <Link to="/beta" onClick={close} style={{ padding: "12px", borderRadius: 8, fontSize: 15, fontWeight: 600, textAlign: "center", color: "#ffffff", background: "#2563eb", textDecoration: "none", transition: "background 0.15s", }}>
+                <Link to="/beta" onClick={close} style={{ padding: "12px", borderRadius: 8, fontSize: 15, fontWeight: 600, textAlign: "center", color: "#ffffff", background: "#2563eb", textDecoration: "none", transition: "all 0.2s", }}>
                   Join Beta
                 </Link>
               </div>
@@ -150,7 +175,7 @@ const Navigation = () => {
         }
 
         /* Mobile menu animation */
-        @keyframes slideDown {
+        @keyframes slideDownMobile {
           from {
             opacity: 0;
             transform: translateY(-10px);
@@ -162,7 +187,7 @@ const Navigation = () => {
         }
 
         .mobile-menu {
-          animation: slideDown 0.2s ease-out;
+          animation: slideDownMobile 0.2s ease-out;
         }
 
         /* Smooth scrolling for mobile menu */
@@ -175,12 +200,12 @@ const Navigation = () => {
         }
 
         .mobile-menu::-webkit-scrollbar-thumb {
-          background: rgba(37, 99, 235, 0.5);
+          background: rgba(59, 130, 246, 0.3);
           border-radius: 3px;
         }
 
         .mobile-menu::-webkit-scrollbar-thumb:hover {
-          background: rgba(37, 99, 235, 0.7);
+          background: rgba(59, 130, 246, 0.5);
         }
 
         /* Touch-friendly tap targets on mobile */

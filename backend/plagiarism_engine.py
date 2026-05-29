@@ -225,6 +225,22 @@ def _pg_store(sentences: list[str], source_id: str) -> bool:
 
 # ─── Main Check ───────────────────────────────────────────────────────────────
 
+def sanitize_input_text(text: str) -> str:
+    """
+    Sanitize text to prevent adversarial bypasses:
+    1. Unicode canonical decomposition & composition (NFKC) -> maps homoglyphs to standard ASCII/Unicode.
+    2. Zero-width character stripping (\u200b, \u200c, \u200d, \ufeff).
+    3. Strip hidden control characters.
+    """
+    import re
+    import unicodedata
+    # Normalize unicode characters
+    normalized = unicodedata.normalize("NFKC", text)
+    # Remove zero-width spaces and control characters (excluding newline and tab)
+    sanitized = re.sub(r'[\u200b-\u200d\ufeff\u0000-\u0008\u000b-\u000c\u000e-\u001f]', '', normalized)
+    return sanitized
+
+
 def check_plagiarism(
     text: str,
     use_web: bool = False,
@@ -232,7 +248,10 @@ def check_plagiarism(
 ) -> dict:
     start = time.time()
 
+    text = sanitize_input_text(text)
+
     # Clamp threshold to safe range
+
     sim_threshold = max(0.60, min(0.95, threshold or SIMILARITY_THRESHOLD))
 
     sentences = split_sentences(text)
@@ -360,12 +379,43 @@ def check_plagiarism(
 
 # ─── Store Submission ─────────────────────────────────────────────────────────
 
+def _add_to_index_incremental(sentences: list[str], sid: str):
+    """
+    Incrementally add new sentences to the in-memory corpus and FAISS index
+    to avoid an expensive O(N) full re-encoding step.
+    """
+    global _corpus, _source_ids, _index, _embeddings
+    if not sentences:
+        return
+
+    # Encode ONLY the new sentences
+    new_embs = MODEL.encode(sentences, show_progress_bar=False, normalize_embeddings=True).astype(np.float32)
+
+    with _lock:
+        if _index is None:
+            dim = new_embs.shape[1]
+            _index = faiss.IndexFlatIP(dim)
+
+        # Add directly to the existing FAISS index
+        _index.add(new_embs)
+
+        # Update matching parallel structures
+        _corpus.extend(sentences)
+        _source_ids.extend([sid] * len(sentences))
+
+        if _embeddings is not None:
+            _embeddings = np.vstack([_embeddings, new_embs])
+        else:
+            _embeddings = new_embs
+
+
 def store_submission(text: str, source_id: Optional[str] = None) -> str:
     """
     Append to corpus. Returns the source_id so callers can track provenance.
     If POSTGRES_DSN is set, also writes to pgvector.
     In production: Postgres + pgvector replaces flat files entirely.
     """
+    text = sanitize_input_text(text)
     sentences = split_sentences(text)
     if not sentences:
         return source_id or ""
@@ -375,10 +425,13 @@ def store_submission(text: str, source_id: Optional[str] = None) -> str:
     # Try Postgres first
     pg_ok = _pg_store(sentences, sid)
 
-    # Always write to flat files as fallback
+    # Always write to flat files as fallback and append directly
     with _pending_lock:
-        for s in sentences:
-            _pending_sentences.append((s, sid))
+        with open(SUBMISSIONS_FILE, "a", encoding="utf-8") as f:
+            for s in sentences:
+                tag = f"\t{sid}"
+                f.write(s + tag + "\n")
 
-    rebuild_index()
+    # Incrementally update active FAISS index in memory
+    _add_to_index_incremental(sentences, sid)
     return sid

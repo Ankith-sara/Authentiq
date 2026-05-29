@@ -13,7 +13,9 @@ const Beta = () => {
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({ name: "", email: "", role: "", usage: "" });
 
-  const set = (k: string) => (e: any) => setForm(f => ({ ...f, [k]: e.target.value }));
+  const set = (k: keyof typeof form) => (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+  ) => setForm(f => ({ ...f, [k]: e.target.value }));
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,29 +29,32 @@ const Beta = () => {
       const { error } = await supabase.from("beta_signups").insert({ name: form.name, email: form.email, role: form.role, usage: form.usage || null });
       if (error) throw error;
       setSubmitted(true);
-    } catch (err: any) {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
-    } finally { setLoading(false); }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Submission failed.";
+      toast({ title: "Error", description: message, variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const inputStyle: React.CSSProperties = {
     width: "100%", padding: "10px 14px", borderRadius: 8, fontSize: 14,
-    background: "#ffffff", border: "1px solid #2563eb",
-    color: "#000000", outline: "none", boxSizing: "border-box",
+    background: "#080d1a", border: "1px solid rgba(59, 130, 246, 0.15)",
+    color: "#ffffff", outline: "none", boxSizing: "border-box",
   };
   const labelStyle: React.CSSProperties = { display: "block", fontSize: 13, fontWeight: 500, color: "#ffffff", marginBottom: 6 };
-  const focusBorder = (e: any) => e.currentTarget.style.borderColor = "rgba(255,255,255,0.2)";
-  const blurBorder  = (e: any) => e.currentTarget.style.borderColor = "#2563eb";
+  const focusBorder = (e: React.FocusEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => e.currentTarget.style.borderColor = "#3b82f6";
+  const blurBorder  = (e: React.FocusEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => e.currentTarget.style.borderColor = "rgba(59, 130, 246, 0.15)";
 
   return (
-    <div style={{ minHeight: "100vh", background: "#000000" }}>
+    <div style={{ minHeight: "100vh", background: "#03050a" }}>
       <Navigation />
 
       <section style={{ padding: "130px 24px 80px", maxWidth: 1100, margin: "0 auto", display: "grid", gridTemplateColumns: "1fr 420px", gap: 80, alignItems: "start" }} className="block sm:grid">
 
         {/* Left — pitch */}
         <div>
-          <span style={{ fontSize: 11, fontWeight: 600, color: "#2563eb", textTransform: "uppercase", letterSpacing: "0.1em" }}>Early Access</span>
+          <span style={{ fontSize: 11, fontWeight: 600, color: "#3b82f6", textTransform: "uppercase", letterSpacing: "0.1em" }}>Early Access</span>
           <h1 style={{ fontSize: "clamp(28px, 4vw, 48px)", fontWeight: 800, letterSpacing: "-0.04em", color: "#ffffff", margin: "14px 0 20px", lineHeight: 1.1 }}>
             Join the Authentiq Beta.
           </h1>
@@ -65,7 +70,7 @@ const Beta = () => {
               { title: "Early adopter status", sub: "Shape the product with direct feedback to the team" },
             ].map(({ title, sub }) => (
               <div key={title} style={{ display: "flex", gap: 14, alignItems: "flex-start" }}>
-                <div style={{ width: 20, height: 20, borderRadius: "50%", background: "#2563eb", border: "1px solid #2563eb", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 2 }}>
+                <div style={{ width: 20, height: 20, borderRadius: "50%", background: "#2563eb", border: "1px solid rgba(59, 130, 246, 0.15)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 2 }}>
                   <CheckCircle2 size={11} color="#ffffff" />
                 </div>
                 <div>
@@ -79,7 +84,7 @@ const Beta = () => {
 
         {/* Right — form */}
         {submitted ? (
-          <div style={{ background: "#000000", border: "1px solid #2563eb", borderRadius: 14, padding: "48px 32px", textAlign: "center", marginTop: 40 }}>
+          <div style={{ background: "#080d1a", border: "1px solid rgba(59, 130, 246, 0.15)", borderRadius: 14, padding: "48px 32px", textAlign: "center", marginTop: 40 }}>
             <div style={{ width: 56, height: 56, borderRadius: "50%", background: "rgba(34,197,94,0.08)", border: "1px solid rgba(34,197,94,0.2)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px" }}>
               <CheckCircle2 size={24} color="#22c55e" />
             </div>
@@ -87,7 +92,7 @@ const Beta = () => {
             <p style={{ fontSize: 14, color: "#ffffff", lineHeight: 1.6 }}>We'll reach out when early access opens. No spam — just one email when it's ready.</p>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} style={{ background: "#000000", border: "1px solid #2563eb", borderRadius: 14, padding: "32px", marginTop: 40 }}>
+          <form onSubmit={handleSubmit} style={{ background: "#080d1a", border: "1px solid rgba(59, 130, 246, 0.15)", borderRadius: 14, padding: "32px", marginTop: 40 }}>
             <h2 style={{ fontSize: 16, fontWeight: 600, color: "#ffffff", marginBottom: 24 }}>Request early access</h2>
 
             <div style={{ marginBottom: 16 }}>
@@ -106,21 +111,20 @@ const Beta = () => {
               </select>
             </div>
             <div style={{ marginBottom: 24 }}>
-              <label style={labelStyle}>How do you use AI? <span style={{ color: "#2563eb", fontWeight: 400 }}>(optional)</span></label>
-              <textarea style={{ ...inputStyle, resize: "vertical", minHeight: 80 }} placeholder="Tell us about your use case…" value={form.usage} onChange={set("usage")} onFocus={focusBorder} onBlur={blurBorder} rows={3} />
+              <label style={labelStyle}>How do you use AI? <span style={{ color: "#3b82f6", fontWeight: 400 }}>(optional)</span></label>
+              <textarea style={{ ...inputStyle, resize: "vertical", minHeight: 80, background: "#080d1a", color: "#ffffff" }} placeholder="Tell us about your use case…" value={form.usage} onChange={set("usage")} onFocus={focusBorder} onBlur={blurBorder} rows={3} />
             </div>
 
-            <button type="submit" disabled={loading} style={{
+            <button type="submit" disabled={loading} className="btn-primary" style={{
               width: "100%", padding: "11px", borderRadius: 8, fontSize: 14, fontWeight: 600,
-              background: loading ? "rgba(245,245,245,0.5)" : "#ffffff", color: "#000000",
               border: "none", cursor: loading ? "not-allowed" : "pointer",
               display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
             }}>
               {loading && <Loader2 size={14} style={{ animation: "spin 1s linear infinite" }} />}
-              {loading ? "Submitting…" : "Request Early Access →"}
+              {loading ? "Submitting…" : "Request Early Access"}
             </button>
 
-            <p style={{ fontSize: 12, color: "#2563eb", textAlign: "center", marginTop: 14 }}>
+            <p style={{ fontSize: 12, color: "#3b82f6", textAlign: "center", marginTop: 14 }}>
               No spam. No data resale. Just one email.
             </p>
           </form>

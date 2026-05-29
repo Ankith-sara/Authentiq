@@ -9,12 +9,13 @@ const Section = ({ title, children }: { title: string; children: React.ReactNode
 );
 
 const Privacy = () => (
-  <div style={{ minHeight: "100vh", background: "#000000" }}>
+  <div style={{ minHeight: "100vh", background: "#03050a" }}>
     <Navigation />
     <div style={{ maxWidth: 680, margin: "0 auto", padding: "120px 24px 80px" }}>
-      <p style={{ fontSize: 12, fontWeight: 600, color: "#2563eb", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 16 }}>Legal</p>
+      <p style={{ fontSize: 12, fontWeight: 600, color: "#3b82f6", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 16 }}>Legal</p>
       <h1 style={{ fontSize: 36, fontWeight: 800, letterSpacing: "-0.04em", color: "#ffffff", marginBottom: 8 }}>Privacy Policy</h1>
-      <p style={{ fontSize: 13, color: "#2563eb", marginBottom: 56 }}>Last updated: January 2025</p>
+      <p style={{ fontSize: 13, color: "#3b82f6", marginBottom: 56 }}>Last updated: January 2025</p>
+
 
       <Section title="Information we collect">
         <p>When you use Authentiq, we collect the text you submit for analysis, your account information (email, name), and usage data (scores, timestamps). We do not collect sensitive personal information beyond what is necessary to provide the service.</p>
